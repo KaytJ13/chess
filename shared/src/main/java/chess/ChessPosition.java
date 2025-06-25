@@ -10,10 +10,10 @@ import java.util.Objects;
  */
 public class ChessPosition {
 
-    private int row;
-    private int col;
+    private final int row;
+    private final int col;
     private ChessPiece piece = null;
-    private PositionColor color;
+    private final PositionColor color;
 
     public ChessPosition(int row, int col) {
         this.row = row;
@@ -39,7 +39,7 @@ public class ChessPosition {
      */
     public int getRow() {
         //throw new RuntimeException("Not implemented");
-        return this.row;
+        return row;
     }
 
     /**
@@ -48,37 +48,37 @@ public class ChessPosition {
      */
     public int getColumn() {
         //throw new RuntimeException("Not implemented");
-        return this.col;
+        return col;
     }
 
     /**
      * @return what piece is currently at this position
      */
     public ChessPiece getPiece() {
-        return this.piece;
+        return piece;
     }
 
     /**
      * adds/moves a piece to this position
-     * @param newPiece the piece to be moved to this position
+     * @param piece the piece to be moved to this position
      */
-    public void addPiece(ChessPiece newPiece) {
-        this.piece = newPiece;
+    public void setPiece(ChessPiece piece) {
+        this.piece = piece;
     }
 
     /**
      * removes a piece from this position
      */
     public void removePiece() {
-        this.piece = null;
+        piece = null;
     }
 
-    /**
-     * @return the color of the position/square
-     */
-    public PositionColor getColor() {
-        return this.color;
-    }
+//    /**
+//     * @return the color of the position/square
+//     */
+//    public PositionColor getColor() {
+//        return color;
+//    }     // I might need this later (graphics, etc.) but it isn't helpful now
 
     @Override
     public boolean equals(Object o) {

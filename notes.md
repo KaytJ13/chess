@@ -1,5 +1,7 @@
 #My notes:
 -
-- Need to write code to individually create each square and add it to the board
-  - The array can't just be made `new ChessPosition[8][8]` because each position has to be created with a row and column (based on their not 0 indexed position) 
-- Need to write code for figuring out where pieces are before `pieceMoves(board, position)` code
+- Need to write `PieceMoves` function (`ChessPiece`)
+  - Will definitely need loop things
+  - Check if pieces are in the way
+  - Check if endPosition is out of bounds
+- Maybe consider adding a `bool firstMove` instance variable to each piece. Could be helpful for pawns and special rules down the line
