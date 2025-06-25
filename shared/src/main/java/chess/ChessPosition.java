@@ -20,11 +20,11 @@ public class ChessPosition {
         this.col = col;
 
         if(row % 2 == 0 && col % 2 == 0){
-            this.color = PositionColor.BLACK;
+            color = PositionColor.BLACK;
         } else if(row % 2 == 1 && col % 2 == 1) {
-            this.color = PositionColor.BLACK;
+            color = PositionColor.BLACK;
         } else {
-            this.color = PositionColor.WHITE;
+            color = PositionColor.WHITE;
         }
     }
 
@@ -38,7 +38,6 @@ public class ChessPosition {
      * 1 codes for the bottom row
      */
     public int getRow() {
-        //throw new RuntimeException("Not implemented");
         return row;
     }
 
@@ -47,7 +46,6 @@ public class ChessPosition {
      * 1 codes for the left column
      */
     public int getColumn() {
-        //throw new RuntimeException("Not implemented");
         return col;
     }
 
@@ -79,6 +77,11 @@ public class ChessPosition {
 //    public PositionColor getColor() {
 //        return color;
 //    }     // I might need this later (graphics, etc.) but it isn't helpful now
+
+    @Override
+    public String toString() {
+        return '{' + row + ", " + col + '}';
+    }
 
     @Override
     public boolean equals(Object o) {

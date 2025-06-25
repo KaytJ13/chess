@@ -10,9 +10,9 @@ import java.util.Objects;
  */
 public class ChessMove {
 
-    private ChessPosition startPosition;
-    private ChessPosition endPosition;
-    private ChessPiece.PieceType promotionPiece;
+    private final ChessPosition startPosition;
+    private final ChessPosition endPosition;
+    private final ChessPiece.PieceType promotionPiece;
 
     public ChessMove(ChessPosition startPosition, ChessPosition endPosition,
                      ChessPiece.PieceType promotionPiece) {
@@ -49,6 +49,14 @@ public class ChessMove {
 
         //throw new RuntimeException("Not implemented");
         return this.promotionPiece;
+    }
+
+    @Override
+    public String toString() {
+        return "ChessMove{" +
+                "endPosition=" + endPosition +
+                ", promotionPiece=" + promotionPiece +
+                '}';
     }
 
     @Override

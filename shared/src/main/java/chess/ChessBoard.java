@@ -29,13 +29,20 @@ public class ChessBoard {
     }
 
     /**
+     * Gets the chess board
+     * @return the array serving as the board
+     */
+    public ChessPosition[][] getBoard() {
+        return board;
+    }
+
+    /**
      * Adds a chess piece to the chessboard
      *
      * @param position where to add the piece to
      * @param piece    the piece to add
      */
     public void addPiece(ChessPosition position, ChessPiece piece) {
-        //throw new RuntimeException("Not implemented");
         ChessPosition currentSquare = board[position.getRow()-1][position.getColumn()-1];
         currentSquare.setPiece(piece);
     }
@@ -48,7 +55,6 @@ public class ChessBoard {
      * position
      */
     public ChessPiece getPiece(ChessPosition position) {
-        //throw new RuntimeException("Not implemented");
         ChessPosition currentSquare = board[position.getRow()-1][position.getColumn()-1];
         return currentSquare.getPiece();
     }
@@ -96,8 +102,6 @@ public class ChessBoard {
         //kings
         board[0][4].setPiece(new ChessPiece(TeamColor.WHITE, PieceType.KING));
         board[7][4].setPiece(new ChessPiece(TeamColor.BLACK, PieceType.KING));
-
-//        throw new RuntimeException("Not implemented");
     }
 
     @Override
