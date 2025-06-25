@@ -86,11 +86,11 @@ public class ChessPosition {
             return false;
         }
         ChessPosition that = (ChessPosition) o;
-        return row == that.row && col == that.col;
+        return row == that.row && col == that.col && Objects.equals(piece, that.piece) && color == that.color;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(row, col);
+        return Objects.hash(row, col, piece, color);
     }
 }
