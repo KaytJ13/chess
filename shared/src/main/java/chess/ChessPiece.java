@@ -103,7 +103,30 @@ public class ChessPiece {
      */
     private Collection<ChessMove> bishopMoves(ChessBoard board, ChessPosition myPosition) {
         HashSet<ChessMove> validMoves = new HashSet<>();
-
+        int counter = 1;
+        //Checking spaces up and right
+        while (!verifyMove(board, myPosition, validMoves, myPosition.getRow()+counter,
+                myPosition.getColumn()+counter)) {
+            counter++;
+        }
+        //Checking spaces up and left
+        counter = 1;
+        while (!verifyMove(board, myPosition, validMoves, myPosition.getRow()-counter,
+                myPosition.getColumn()+counter)) {
+            counter++;
+        }
+        //Checking spaces down and right
+        counter = 1;
+        while (!verifyMove(board, myPosition, validMoves, myPosition.getRow()+counter,
+                myPosition.getColumn()-counter)) {
+            counter++;
+        }
+        //Checking spaces down and left
+        counter = 1;
+        while (!verifyMove(board, myPosition, validMoves, myPosition.getRow()-counter,
+                myPosition.getColumn()-counter)) {
+            counter++;
+        }
 
         return validMoves;
     }
@@ -128,15 +151,27 @@ public class ChessPiece {
         return validMoves;
     }
 
-    private void verifyMove(ChessBoard board, ChessPosition myPosition, HashSet<ChessMove> validMoves, int xPosition, int yPosition) {
+    /**
+     * Checks to see if a piece can move to a certain location.
+     * If it can, it adds the location. Returns whether it can go farther or not (rooks, bishops, queens).
+     * @param board the current gameboard
+     * @param myPosition the current position of the piece
+     * @param validMoves the collection of valid moves to be added to
+     * @param xPosition the x coordinate of the potential end position
+     * @param yPosition the y coordinate of the potential end position
+     * @return whether the piece should stop moving (blocked, etc.) (true) or keep going (false)
+     */
+    private boolean verifyMove(ChessBoard board, ChessPosition myPosition, HashSet<ChessMove> validMoves, int xPosition, int yPosition) {
         ChessPosition endOption = new ChessPosition(xPosition, yPosition);
         if (checkBounds(endOption)) {
             if (board.getBoard()[xPosition-1][yPosition-1].getPiece() == null) {
                 validMoves.add(new ChessMove(myPosition, endOption, null));
+                return false;
             } else if (board.getBoard()[xPosition-1][yPosition-1].getPiece().getTeamColor() != pieceColor){
                 validMoves.add(new ChessMove(myPosition, endOption, null));
-            }
-        }
+                return true;
+            } else return true;
+        } return true;
     }
 
     /**
@@ -147,66 +182,32 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     private Collection<ChessMove> rookMoves(ChessBoard board, ChessPosition myPosition) {
-        // two separate for loops, breaks when hits a piece (adds move if opposite color, doesn't if the same)
-        // one loop checks moves with row adjustments, one checks moves with column adjustments
-        // don't include or break at its own position
         HashSet<ChessMove> validMoves = new HashSet<>();
-
         // Checking all positions in the same column at higher rows than current position
         for (int i = myPosition.getRow()+1; i <= 8; i++) {
-            if (checkValid(myPosition, validMoves, i,
-                    board.getBoard()[i-1][myPosition.getColumn()-1].getPiece(), true)) {
+            if (verifyMove(board, myPosition, validMoves, i, myPosition.getColumn())) {
                 break;
             }
         }
         // Checking positions in lower rows
         for (int i = myPosition.getRow()-1; i > 0; i--) {
-            if (checkValid(myPosition, validMoves, i,
-                    board.getBoard()[i-1][myPosition.getColumn()-1].getPiece(), true)) {
+            if (verifyMove(board, myPosition, validMoves, i, myPosition.getColumn())) {
                 break;
             }
         }
         // Checking columns to the left
         for (int i = myPosition.getColumn()-1; i > 0; i--) {
-            if (checkValid(myPosition, validMoves, i,
-                    board.getBoard()[myPosition.getRow()-1][i-1].getPiece(), false)) {
+            if (verifyMove(board, myPosition, validMoves, myPosition.getRow(), i)) {
                 break;
             }
         }
         // Checking columns to the right
         for (int i = myPosition.getColumn()+1; i <= 8; i++) {
-            if (checkValid(myPosition, validMoves, i,
-                    board.getBoard()[myPosition.getRow()-1][i-1].getPiece(), false)) {
+            if (verifyMove(board, myPosition, validMoves, myPosition.getRow(), i)) {
                 break;
             }
         }
         return validMoves;
-    }
-
-    /**
-     * Checks to see if a piece can move to a certain location.
-     * If it can, it adds the location. Returns whether it can go farther or not.
-     * @param position the current position of the piece
-     * @param validMoves the collection of valid moves to be added to
-     * @param i how much the position is being incremented by
-     * @param newPiece the piece in the new/end position
-     * @param row whether checking a row (true) or a column (false)
-     * @return whether the piece should stop moving (blocked, etc.) (true) or keep going (false)
-     */
-    private boolean checkValid(ChessPosition position, HashSet<ChessMove> validMoves, int i, ChessPiece newPiece, boolean row) {
-        ChessPosition endOption;
-        if (row) {
-            endOption = new ChessPosition(i, position.getColumn());
-        } else {
-            endOption = new ChessPosition(position.getRow(), i);
-        }
-        if (newPiece == null) {
-            validMoves.add(new ChessMove(position, endOption, null));
-            return false;
-        } else if (newPiece.getTeamColor() != pieceColor){
-            validMoves.add(new ChessMove(position, endOption, null));
-            return true;
-        } else return true;
     }
 
     /**
@@ -219,6 +220,18 @@ public class ChessPiece {
     private Collection<ChessMove> pawnMoves(ChessBoard board, ChessPosition myPosition) {
         throw new RuntimeException("Not implemented");
         // HashSet<ChessMove> validMoves = new HashSet<>();
+
+        /*
+        The different potential cases for pawn movement:
+        - normal (x+1 for white, x-1 for black) ==> only if space is unoccupied (null)
+        - first move (x+2 for white, x-2 for black) ==> only if null and start position is row 2 (white) or 7 (black)
+        - capturing (x+1, y+/-1 for white, x-1, y+/-1 for black) ==> only if opposite color at location
+        - promotion (normal movement, but reaches end & promotes (q, r, n, b)) ==> if endX is row 8 (white) or 1 (black)
+        - capture + promotion
+
+        promotion will need to be an if statement under normal and capture
+        first move will need to be an if statement under normal
+         */
     }
 
     /**
