@@ -16,11 +16,7 @@ public class ChessBoard {
     private final ChessPosition[][] board;
 
     public ChessBoard() {
-        board = new ChessPosition[][]{{null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null}, {null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null}, {null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null}, {null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null}};
+        board = new ChessPosition[8][8];
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 board[i][j] = new ChessPosition(i+1, j+1);

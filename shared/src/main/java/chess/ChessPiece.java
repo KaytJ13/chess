@@ -73,21 +73,11 @@ public class ChessPiece {
      */
     private Collection<ChessMove> kingMoves(ChessBoard board, ChessPosition myPosition) {
         HashSet<ChessMove> validMoves = new HashSet<>();
-        ChessPosition endOption;
-
         for (int i = myPosition.getRow()-1; i <= myPosition.getRow()+1; i++) {
             for (int j = myPosition.getColumn()-1; j <= myPosition.getColumn()+1; j++) {
-                endOption = new ChessPosition(i, j);
-                if (checkBounds(endOption)) {
-                    if (board.getBoard()[i-1][j-1].getPiece() == null) {
-                        validMoves.add(new ChessMove(myPosition, endOption, null));
-                    } else if (board.getBoard()[i-1][j-1].getPiece().getTeamColor() != pieceColor){
-                        validMoves.add(new ChessMove(myPosition, endOption, null));
-                    }
-                }
+                verifyMove(board, myPosition, validMoves, i, j);
             }
         }
-
         return validMoves;
     }
 
@@ -99,8 +89,9 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     private Collection<ChessMove> queenMoves(ChessBoard board, ChessPosition myPosition) {
-        throw new RuntimeException("Not implemented");
-        // HashSet<ChessMove> validMoves = new HashSet<>();
+        Collection<ChessMove> validMoves = rookMoves(board, myPosition);
+        validMoves.addAll(bishopMoves(board, myPosition));
+        return validMoves;
     }
 
     /**
@@ -111,8 +102,10 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     private Collection<ChessMove> bishopMoves(ChessBoard board, ChessPosition myPosition) {
-        throw new RuntimeException("Not implemented");
-        // HashSet<ChessMove> validMoves = new HashSet<>();
+        HashSet<ChessMove> validMoves = new HashSet<>();
+
+
+        return validMoves;
     }
 
     /**
@@ -123,8 +116,27 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     private Collection<ChessMove> knightMoves(ChessBoard board, ChessPosition myPosition) {
-        throw new RuntimeException("Not implemented");
-        // HashSet<ChessMove> validMoves = new HashSet<>();
+        HashSet<ChessMove> validMoves = new HashSet<>();
+        int[][] potentialMoves = {{2,1}, {2,-1}, {1,2}, {1,-2}, {-1,2}, {-1,-2}, {-2,1}, {-2,-1}};
+
+        for (int[] i : potentialMoves) {
+            int xPosition = myPosition.getRow() + i[0];
+            int yPosition = myPosition.getColumn() + i[1];
+            verifyMove(board, myPosition, validMoves, xPosition, yPosition);
+        }
+
+        return validMoves;
+    }
+
+    private void verifyMove(ChessBoard board, ChessPosition myPosition, HashSet<ChessMove> validMoves, int xPosition, int yPosition) {
+        ChessPosition endOption = new ChessPosition(xPosition, yPosition);
+        if (checkBounds(endOption)) {
+            if (board.getBoard()[xPosition-1][yPosition-1].getPiece() == null) {
+                validMoves.add(new ChessMove(myPosition, endOption, null));
+            } else if (board.getBoard()[xPosition-1][yPosition-1].getPiece().getTeamColor() != pieceColor){
+                validMoves.add(new ChessMove(myPosition, endOption, null));
+            }
+        }
     }
 
     /**
@@ -142,50 +154,56 @@ public class ChessPiece {
 
         // Checking all positions in the same column at higher rows than current position
         for (int i = myPosition.getRow()+1; i <= 8; i++) {
-            if (checkValidRow(board, myPosition, validMoves, i)) {
+            if (checkValid(myPosition, validMoves, i,
+                    board.getBoard()[i-1][myPosition.getColumn()-1].getPiece(), true)) {
                 break;
             }
         }
         // Checking positions in lower rows
         for (int i = myPosition.getRow()-1; i > 0; i--) {
-            if (checkValidRow(board, myPosition, validMoves, i)) {
+            if (checkValid(myPosition, validMoves, i,
+                    board.getBoard()[i-1][myPosition.getColumn()-1].getPiece(), true)) {
                 break;
             }
         }
         // Checking columns to the left
         for (int i = myPosition.getColumn()-1; i > 0; i--) {
-            if (checkValidColumn(board, myPosition, validMoves, i)) {
+            if (checkValid(myPosition, validMoves, i,
+                    board.getBoard()[myPosition.getRow()-1][i-1].getPiece(), false)) {
                 break;
             }
         }
         // Checking columns to the right
         for (int i = myPosition.getColumn()+1; i <= 8; i++) {
-            if (checkValidColumn(board, myPosition, validMoves, i)) {
+            if (checkValid(myPosition, validMoves, i,
+                    board.getBoard()[myPosition.getRow()-1][i-1].getPiece(), false)) {
                 break;
             }
         }
         return validMoves;
     }
 
-    private boolean checkValidColumn(ChessBoard board, ChessPosition position, HashSet<ChessMove> validMoves, int i) {
+    /**
+     * Checks to see if a piece can move to a certain location.
+     * If it can, it adds the location. Returns whether it can go farther or not.
+     * @param position the current position of the piece
+     * @param validMoves the collection of valid moves to be added to
+     * @param i how much the position is being incremented by
+     * @param newPiece the piece in the new/end position
+     * @param row whether checking a row (true) or a column (false)
+     * @return whether the piece should stop moving (blocked, etc.) (true) or keep going (false)
+     */
+    private boolean checkValid(ChessPosition position, HashSet<ChessMove> validMoves, int i, ChessPiece newPiece, boolean row) {
         ChessPosition endOption;
-        endOption = new ChessPosition(position.getRow(), i);
-        if (board.getBoard()[position.getRow()-1][i-1].getPiece() == null) {
+        if (row) {
+            endOption = new ChessPosition(i, position.getColumn());
+        } else {
+            endOption = new ChessPosition(position.getRow(), i);
+        }
+        if (newPiece == null) {
             validMoves.add(new ChessMove(position, endOption, null));
             return false;
-        } else if (board.getBoard()[position.getRow()-1][i-1].getPiece().getTeamColor() != pieceColor){
-            validMoves.add(new ChessMove(position, endOption, null));
-            return true;
-        } else return true;
-    }
-
-    private boolean checkValidRow(ChessBoard board, ChessPosition position, HashSet<ChessMove> validMoves, int i) {
-        ChessPosition endOption;
-        endOption = new ChessPosition(i, position.getColumn());
-        if (board.getBoard()[i-1][position.getColumn()-1].getPiece() == null) {
-            validMoves.add(new ChessMove(position, endOption, null));
-            return false;
-        } else if (board.getBoard()[i-1][position.getColumn()-1].getPiece().getTeamColor() != pieceColor){
+        } else if (newPiece.getTeamColor() != pieceColor){
             validMoves.add(new ChessMove(position, endOption, null));
             return true;
         } else return true;
