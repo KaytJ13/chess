@@ -218,20 +218,105 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     private Collection<ChessMove> pawnMoves(ChessBoard board, ChessPosition myPosition) {
-        throw new RuntimeException("Not implemented");
-        // HashSet<ChessMove> validMoves = new HashSet<>();
+         HashSet<ChessMove> validMoves = new HashSet<>();
+         ChessPosition endOption;
+         if (pieceColor == ChessGame.TeamColor.WHITE) {
+             if (myPosition.getRow() == 7) {
+                 // promotion
+                 endOption = new ChessPosition(myPosition.getRow()+1, myPosition.getColumn());
+                 validatePromotionMove(board, myPosition, validMoves, endOption);
+                 // capturing promotion
+                 endOption = new ChessPosition(myPosition.getRow()+1, myPosition.getColumn()+1);
+                 validatePromotionCapture(board, myPosition, validMoves, endOption, pieceColor);
+                 endOption = new ChessPosition(myPosition.getRow()+1, myPosition.getColumn()-1);
+                 validatePromotionCapture(board, myPosition, validMoves, endOption, pieceColor);
+             } else {
+                 if (myPosition.getRow() == 2) {
+                     // first move white
+                     endOption = new ChessPosition(myPosition.getRow()+2, myPosition.getColumn());
+                     if (checkBounds(endOption) &&
+                             board.getBoard()[endOption.getRow()-1][endOption.getColumn()-1].getPiece() == null &&
+                             board.getBoard()[endOption.getRow()-2][endOption.getColumn()-1].getPiece() == null) {
+                         validMoves.add(new ChessMove(myPosition, endOption, null));
+                     }
+                 }
+                 // normal
+                 endOption = new ChessPosition(myPosition.getRow()+1, myPosition.getColumn());
+                 if (checkBounds(endOption) &&
+                         board.getBoard()[endOption.getRow()-1][endOption.getColumn()-1].getPiece() == null) {
+                     validMoves.add(new ChessMove(myPosition, endOption, null));
+                 }
+                 // capturing (non-promotion)
+                 endOption = new ChessPosition(myPosition.getRow()+1, myPosition.getColumn()+1);
+                 validateCapture(board, myPosition, validMoves, endOption, pieceColor);
+                 endOption = new ChessPosition(myPosition.getRow()+1, myPosition.getColumn()-1);
+                 validateCapture(board, myPosition, validMoves, endOption, pieceColor);
+             }
+         } else {
+             if (myPosition.getRow() == 2) {
+                 // promotion
+                 endOption = new ChessPosition(myPosition.getRow()-1, myPosition.getColumn());
+                 validatePromotionMove(board, myPosition, validMoves, endOption);
+                 // capturing promotion
+                 endOption = new ChessPosition(myPosition.getRow()-1, myPosition.getColumn()+1);
+                 validatePromotionCapture(board, myPosition, validMoves, endOption, pieceColor);
+                 endOption = new ChessPosition(myPosition.getRow()-1, myPosition.getColumn()-1);
+                 validatePromotionCapture(board, myPosition, validMoves, endOption, pieceColor);
+             } else {
+                 if (myPosition.getRow() == 7) {
+                     // first move black
+                     endOption = new ChessPosition(myPosition.getRow()-2, myPosition.getColumn());
+                     if (checkBounds(endOption) &&
+                             board.getBoard()[endOption.getRow()-1][endOption.getColumn()-1].getPiece() == null &&
+                             board.getBoard()[endOption.getRow()][endOption.getColumn()-1].getPiece() == null) {
+                         validMoves.add(new ChessMove(myPosition, endOption, null));
+                     }
+                 }
+                 // normal
+                 endOption = new ChessPosition(myPosition.getRow()-1, myPosition.getColumn());
+                 if (checkBounds(endOption) &&
+                         board.getBoard()[endOption.getRow()-1][endOption.getColumn()-1].getPiece() == null) {
+                     validMoves.add(new ChessMove(myPosition, endOption, null));
+                 }
+                 // capturing (non-promotion)
+                 endOption = new ChessPosition(myPosition.getRow()-1, myPosition.getColumn()+1);
+                 validateCapture(board, myPosition, validMoves, endOption, pieceColor);
+                 endOption = new ChessPosition(myPosition.getRow()-1, myPosition.getColumn()-1);
+                 validateCapture(board, myPosition, validMoves, endOption, pieceColor);
+             }
+         }
+        return validMoves;
+    }
 
-        /*
-        The different potential cases for pawn movement:
-        - normal (x+1 for white, x-1 for black) ==> only if space is unoccupied (null)
-        - first move (x+2 for white, x-2 for black) ==> only if null and start position is row 2 (white) or 7 (black)
-        - capturing (x+1, y+/-1 for white, x-1, y+/-1 for black) ==> only if opposite color at location
-        - promotion (normal movement, but reaches end & promotes (q, r, n, b)) ==> if endX is row 8 (white) or 1 (black)
-        - capture + promotion
+    private void validateCapture(ChessBoard board, ChessPosition myPosition, HashSet<ChessMove> validMoves, ChessPosition endOption, ChessGame.TeamColor color) {
+        if (checkBounds(endOption) &&
+                board.getBoard()[endOption.getRow()-1][endOption.getColumn()-1].getPiece() != null) {
+            if (board.getBoard()[endOption.getRow()-1][endOption.getColumn()-1].getPiece().getTeamColor() != color) {
+                validMoves.add(new ChessMove(myPosition, endOption, null));
+            }
+        }
+    }
 
-        promotion will need to be an if statement under normal and capture
-        first move will need to be an if statement under normal
-         */
+    private void validatePromotionCapture(ChessBoard board, ChessPosition myPosition, HashSet<ChessMove> validMoves, ChessPosition endOption, ChessGame.TeamColor color) {
+        if (checkBounds(endOption) &&
+                board.getBoard()[endOption.getRow()-1][endOption.getColumn()-1].getPiece() != null) {
+            if (board.getBoard()[endOption.getRow()-1][endOption.getColumn()-1].getPiece().getTeamColor() !=
+                    color) {
+                validMoves.add(new ChessMove(myPosition, endOption, PieceType.QUEEN));
+                validMoves.add(new ChessMove(myPosition, endOption, PieceType.ROOK));
+                validMoves.add(new ChessMove(myPosition, endOption, PieceType.KNIGHT));
+                validMoves.add(new ChessMove(myPosition, endOption, PieceType.BISHOP));                     }
+        }
+    }
+
+    private void validatePromotionMove(ChessBoard board, ChessPosition myPosition, HashSet<ChessMove> validMoves, ChessPosition endOption) {
+        if (checkBounds(endOption) &&
+                board.getBoard()[endOption.getRow()-1][endOption.getColumn()-1].getPiece() == null) {
+            validMoves.add(new ChessMove(myPosition, endOption, PieceType.QUEEN));
+            validMoves.add(new ChessMove(myPosition, endOption, PieceType.ROOK));
+            validMoves.add(new ChessMove(myPosition, endOption, PieceType.KNIGHT));
+            validMoves.add(new ChessMove(myPosition, endOption, PieceType.BISHOP));
+        }
     }
 
     /**
