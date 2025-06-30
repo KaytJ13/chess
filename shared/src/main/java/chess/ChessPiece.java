@@ -105,25 +105,25 @@ public class ChessPiece {
         HashSet<ChessMove> validMoves = new HashSet<>();
         int counter = 1;
         //Checking spaces up and right
-        while (!verifyMove(board, myPosition, validMoves, myPosition.getRow()+counter,
+        while (verifyMove(board, myPosition, validMoves, myPosition.getRow()+counter,
                 myPosition.getColumn()+counter)) {
             counter++;
         }
         //Checking spaces up and left
         counter = 1;
-        while (!verifyMove(board, myPosition, validMoves, myPosition.getRow()-counter,
+        while (verifyMove(board, myPosition, validMoves, myPosition.getRow()-counter,
                 myPosition.getColumn()+counter)) {
             counter++;
         }
         //Checking spaces down and right
         counter = 1;
-        while (!verifyMove(board, myPosition, validMoves, myPosition.getRow()+counter,
+        while (verifyMove(board, myPosition, validMoves, myPosition.getRow()+counter,
                 myPosition.getColumn()-counter)) {
             counter++;
         }
         //Checking spaces down and left
         counter = 1;
-        while (!verifyMove(board, myPosition, validMoves, myPosition.getRow()-counter,
+        while (verifyMove(board, myPosition, validMoves, myPosition.getRow()-counter,
                 myPosition.getColumn()-counter)) {
             counter++;
         }
@@ -143,9 +143,8 @@ public class ChessPiece {
         int[][] potentialMoves = {{2,1}, {2,-1}, {1,2}, {1,-2}, {-1,2}, {-1,-2}, {-2,1}, {-2,-1}};
 
         for (int[] i : potentialMoves) {
-            int xPosition = myPosition.getRow() + i[0];
-            int yPosition = myPosition.getColumn() + i[1];
-            verifyMove(board, myPosition, validMoves, xPosition, yPosition);
+            verifyMove(board, myPosition, validMoves, myPosition.getRow() + i[0],
+                    myPosition.getColumn() + i[1]);
         }
 
         return validMoves;
@@ -165,14 +164,14 @@ public class ChessPiece {
                                HashSet<ChessMove> validMoves, int xPosition, int yPosition) {
         ChessPosition endOption = new ChessPosition(xPosition, yPosition);
         if (checkBounds(endOption)) {
-            if (board.getBoard()[xPosition-1][yPosition-1].getPiece() == null) {
-                validMoves.add(new ChessMove(myPosition, endOption, null));
-                return false;
-            } else if (board.getBoard()[xPosition-1][yPosition-1].getPiece().getTeamColor() != pieceColor){
+            if (board.getSquare(endOption).getPiece() == null) {
                 validMoves.add(new ChessMove(myPosition, endOption, null));
                 return true;
-            } else return true;
-        } return true;
+            } else if (board.getSquare(endOption).getPiece().getTeamColor() != pieceColor){
+                validMoves.add(new ChessMove(myPosition, endOption, null));
+            }
+        }
+        return false;
     }
 
     /**
@@ -184,29 +183,25 @@ public class ChessPiece {
      */
     private Collection<ChessMove> rookMoves(ChessBoard board, ChessPosition myPosition) {
         HashSet<ChessMove> validMoves = new HashSet<>();
+        int counter = 1;
         // Checking all positions in the same column at higher rows than current position
-        for (int i = myPosition.getRow()+1; i <= 8; i++) {
-            if (verifyMove(board, myPosition, validMoves, i, myPosition.getColumn())) {
-                break;
-            }
+        while(verifyMove(board, myPosition, validMoves, myPosition.getRow()+counter, myPosition.getColumn())) {
+            counter++;
         }
         // Checking positions in lower rows
-        for (int i = myPosition.getRow()-1; i > 0; i--) {
-            if (verifyMove(board, myPosition, validMoves, i, myPosition.getColumn())) {
-                break;
-            }
-        }
-        // Checking columns to the left
-        for (int i = myPosition.getColumn()-1; i > 0; i--) {
-            if (verifyMove(board, myPosition, validMoves, myPosition.getRow(), i)) {
-                break;
-            }
+        counter = 1;
+        while(verifyMove(board, myPosition, validMoves, myPosition.getRow()-counter, myPosition.getColumn())) {
+            counter++;
         }
         // Checking columns to the right
-        for (int i = myPosition.getColumn()+1; i <= 8; i++) {
-            if (verifyMove(board, myPosition, validMoves, myPosition.getRow(), i)) {
-                break;
-            }
+        counter = 1;
+        while(verifyMove(board, myPosition, validMoves, myPosition.getRow(), myPosition.getColumn()+counter)) {
+            counter++;
+        }
+        // Checking columns to the left
+        counter = 1;
+        while(verifyMove(board, myPosition, validMoves, myPosition.getRow(), myPosition.getColumn()-counter)) {
+            counter++;
         }
         return validMoves;
     }
@@ -224,87 +219,88 @@ public class ChessPiece {
          if (pieceColor == ChessGame.TeamColor.WHITE) {
              if (myPosition.getRow() == 7) {
                  // promotion
-                 endOption = new ChessPosition(myPosition.getRow()+1, myPosition.getColumn());
-                 validatePromotionMove(board, myPosition, validMoves, endOption);
+                 validatePromotionMove(board, myPosition, validMoves, myPosition.getRow()+1,
+                         myPosition.getColumn());
                  // capturing promotion
-                 endOption = new ChessPosition(myPosition.getRow()+1, myPosition.getColumn()+1);
-                 validatePromotionCapture(board, myPosition, validMoves, endOption, pieceColor);
-                 endOption = new ChessPosition(myPosition.getRow()+1, myPosition.getColumn()-1);
-                 validatePromotionCapture(board, myPosition, validMoves, endOption, pieceColor);
+                 validatePromotionCapture(board, myPosition, validMoves, myPosition.getRow()+1,
+                         myPosition.getColumn()+1, pieceColor);
+                 validatePromotionCapture(board, myPosition, validMoves, myPosition.getRow()+1,
+                         myPosition.getColumn()-1, pieceColor);
              } else {
                  if (myPosition.getRow() == 2) {
                      // first move white
                      endOption = new ChessPosition(myPosition.getRow()+2, myPosition.getColumn());
+                     ChessPosition blockSquare = new ChessPosition(myPosition.getRow()+1, myPosition.getColumn());
                      if (checkBounds(endOption) &&
-                             board.getBoard()[endOption.getRow()-1][endOption.getColumn()-1].getPiece() == null &&
-                             board.getBoard()[endOption.getRow()-2][endOption.getColumn()-1].getPiece() == null) {
+                             board.getSquare(endOption).getPiece() == null &&
+                             board.getSquare(blockSquare).getPiece() == null) {
                          validMoves.add(new ChessMove(myPosition, endOption, null));
                      }
                  }
                  // normal
                  endOption = new ChessPosition(myPosition.getRow()+1, myPosition.getColumn());
                  if (checkBounds(endOption) &&
-                         board.getBoard()[endOption.getRow()-1][endOption.getColumn()-1].getPiece() == null) {
+                         board.getSquare(endOption).getPiece() == null) {
                      validMoves.add(new ChessMove(myPosition, endOption, null));
                  }
                  // capturing (non-promotion)
-                 endOption = new ChessPosition(myPosition.getRow()+1, myPosition.getColumn()+1);
-                 validateCapture(board, myPosition, validMoves, endOption, pieceColor);
-                 endOption = new ChessPosition(myPosition.getRow()+1, myPosition.getColumn()-1);
-                 validateCapture(board, myPosition, validMoves, endOption, pieceColor);
+                 validateCapture(board, myPosition, validMoves, myPosition.getRow()+1,
+                         myPosition.getColumn()+1, pieceColor);
+                 validateCapture(board, myPosition, validMoves, myPosition.getRow()+1,
+                         myPosition.getColumn()-1, pieceColor);
              }
          } else {
              if (myPosition.getRow() == 2) {
                  // promotion
-                 endOption = new ChessPosition(myPosition.getRow()-1, myPosition.getColumn());
-                 validatePromotionMove(board, myPosition, validMoves, endOption);
+                 validatePromotionMove(board, myPosition, validMoves, myPosition.getRow()-1,
+                         myPosition.getColumn());
                  // capturing promotion
-                 endOption = new ChessPosition(myPosition.getRow()-1, myPosition.getColumn()+1);
-                 validatePromotionCapture(board, myPosition, validMoves, endOption, pieceColor);
-                 endOption = new ChessPosition(myPosition.getRow()-1, myPosition.getColumn()-1);
-                 validatePromotionCapture(board, myPosition, validMoves, endOption, pieceColor);
+                 validatePromotionCapture(board, myPosition, validMoves, myPosition.getRow()-1,
+                         myPosition.getColumn()+1, pieceColor);
+                 validatePromotionCapture(board, myPosition, validMoves, myPosition.getRow()-1,
+                         myPosition.getColumn()-1, pieceColor);
              } else {
                  if (myPosition.getRow() == 7) {
                      // first move black
                      endOption = new ChessPosition(myPosition.getRow()-2, myPosition.getColumn());
+                     ChessPosition blockSquare = new ChessPosition(myPosition.getRow()-1, myPosition.getColumn());
                      if (checkBounds(endOption) &&
-                             board.getBoard()[endOption.getRow()-1][endOption.getColumn()-1].getPiece() == null &&
-                             board.getBoard()[endOption.getRow()][endOption.getColumn()-1].getPiece() == null) {
+                             board.getSquare(endOption).getPiece() == null &&
+                             board.getSquare(blockSquare).getPiece() == null) {
                          validMoves.add(new ChessMove(myPosition, endOption, null));
                      }
                  }
                  // normal
                  endOption = new ChessPosition(myPosition.getRow()-1, myPosition.getColumn());
                  if (checkBounds(endOption) &&
-                         board.getBoard()[endOption.getRow()-1][endOption.getColumn()-1].getPiece() == null) {
+                         board.getSquare(endOption).getPiece() == null) {
                      validMoves.add(new ChessMove(myPosition, endOption, null));
                  }
                  // capturing (non-promotion)
-                 endOption = new ChessPosition(myPosition.getRow()-1, myPosition.getColumn()+1);
-                 validateCapture(board, myPosition, validMoves, endOption, pieceColor);
-                 endOption = new ChessPosition(myPosition.getRow()-1, myPosition.getColumn()-1);
-                 validateCapture(board, myPosition, validMoves, endOption, pieceColor);
+                 validateCapture(board, myPosition, validMoves, myPosition.getRow()-1,
+                         myPosition.getColumn()+1, pieceColor);
+                 validateCapture(board, myPosition, validMoves, myPosition.getRow()-1,
+                         myPosition.getColumn()-1, pieceColor);
              }
          }
         return validMoves;
     }
 
     private void validateCapture(ChessBoard board, ChessPosition myPosition,
-                                 HashSet<ChessMove> validMoves, ChessPosition endOption, ChessGame.TeamColor color) {
-        if (checkBounds(endOption) &&
-                board.getBoard()[endOption.getRow()-1][endOption.getColumn()-1].getPiece() != null) {
-            if (board.getBoard()[endOption.getRow()-1][endOption.getColumn()-1].getPiece().getTeamColor() != color) {
+                                 HashSet<ChessMove> validMoves, int xEndPos, int yEndPos, ChessGame.TeamColor color) {
+        ChessPosition endOption = new ChessPosition(xEndPos, yEndPos);
+        if (checkBounds(endOption) && board.getSquare(endOption).getPiece() != null) {
+            if (board.getSquare(endOption).getPiece().getTeamColor() != color) {
                 validMoves.add(new ChessMove(myPosition, endOption, null));
             }
         }
     }
 
     private void validatePromotionCapture(ChessBoard board, ChessPosition myPosition, HashSet<ChessMove> validMoves,
-                                          ChessPosition endOption, ChessGame.TeamColor color) {
-        if (checkBounds(endOption) &&
-                board.getBoard()[endOption.getRow()-1][endOption.getColumn()-1].getPiece() != null) {
-            if (board.getBoard()[endOption.getRow()-1][endOption.getColumn()-1].getPiece().getTeamColor() !=
-                    color) {
+                                          int xEndPos, int yEndPos, ChessGame.TeamColor color) {
+        ChessPosition endOption = new ChessPosition(xEndPos, yEndPos);
+        if (checkBounds(endOption) && board.getSquare(endOption).getPiece() != null) {
+            if (board.getSquare(endOption).getPiece().getTeamColor() != color) {
                 validMoves.add(new ChessMove(myPosition, endOption, PieceType.QUEEN));
                 validMoves.add(new ChessMove(myPosition, endOption, PieceType.ROOK));
                 validMoves.add(new ChessMove(myPosition, endOption, PieceType.KNIGHT));
@@ -313,9 +309,9 @@ public class ChessPiece {
     }
 
     private void validatePromotionMove(ChessBoard board, ChessPosition myPosition,
-                                       HashSet<ChessMove> validMoves, ChessPosition endOption) {
-        if (checkBounds(endOption) &&
-                board.getBoard()[endOption.getRow()-1][endOption.getColumn()-1].getPiece() == null) {
+                                       HashSet<ChessMove> validMoves, int xEndPos, int yEndPos) {
+        ChessPosition endOption = new ChessPosition(xEndPos, yEndPos);
+        if (checkBounds(endOption) && board.getSquare(endOption).getPiece() == null) {
             validMoves.add(new ChessMove(myPosition, endOption, PieceType.QUEEN));
             validMoves.add(new ChessMove(myPosition, endOption, PieceType.ROOK));
             validMoves.add(new ChessMove(myPosition, endOption, PieceType.KNIGHT));

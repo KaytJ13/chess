@@ -51,7 +51,12 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        if (startPosition.getPiece() == null) {
+            return null;
+        }
+        Collection<ChessMove> potentialMoves = startPosition.getPiece().pieceMoves(board, startPosition);
+        // take out everything that could lead to check
+        return potentialMoves;
     }
 
     /**
@@ -61,7 +66,17 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        throw new RuntimeException("Not implemented");
+        ChessPiece currentPiece = board.getPiece(move.getStartPosition());
+        if (!validMoves(move.getStartPosition()).contains(move)) {
+            throw new InvalidMoveException("This is not the move you are looking for");
+        } else if (teamTurn != currentPiece.getTeamColor()) {
+            throw new InvalidMoveException("Patience, my young Padawan");
+        }
+        board.getSquare(move.getStartPosition()).setPiece(null);
+        if (move.getPromotionPiece() != null) {
+            currentPiece = new ChessPiece(currentPiece.getTeamColor(), move.getPromotionPiece());
+        }
+        board.getSquare(move.getEndPosition()).setPiece(currentPiece);
     }
 
     /**
@@ -81,6 +96,9 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
+        if (!isInCheck(teamColor)) {
+            return false;
+        }
         throw new RuntimeException("Not implemented");
     }
 
@@ -92,6 +110,9 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
+        if (isInCheck(teamColor)) {
+            return false;
+        }
         throw new RuntimeException("Not implemented");
     }
 
