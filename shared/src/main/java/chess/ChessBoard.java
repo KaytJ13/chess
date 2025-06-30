@@ -64,7 +64,7 @@ public class ChessBoard {
         for (ChessPosition[] boardRow : board) {
             for (ChessPosition square : boardRow) {
                 if (square.getPiece() != null){
-                    square.removePiece();
+                    square.setPiece(null);
                 }
             }
         }

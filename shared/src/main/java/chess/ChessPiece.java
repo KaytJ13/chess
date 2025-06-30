@@ -161,7 +161,8 @@ public class ChessPiece {
      * @param yPosition the y coordinate of the potential end position
      * @return whether the piece should stop moving (blocked, etc.) (true) or keep going (false)
      */
-    private boolean verifyMove(ChessBoard board, ChessPosition myPosition, HashSet<ChessMove> validMoves, int xPosition, int yPosition) {
+    private boolean verifyMove(ChessBoard board, ChessPosition myPosition,
+                               HashSet<ChessMove> validMoves, int xPosition, int yPosition) {
         ChessPosition endOption = new ChessPosition(xPosition, yPosition);
         if (checkBounds(endOption)) {
             if (board.getBoard()[xPosition-1][yPosition-1].getPiece() == null) {
@@ -288,7 +289,8 @@ public class ChessPiece {
         return validMoves;
     }
 
-    private void validateCapture(ChessBoard board, ChessPosition myPosition, HashSet<ChessMove> validMoves, ChessPosition endOption, ChessGame.TeamColor color) {
+    private void validateCapture(ChessBoard board, ChessPosition myPosition,
+                                 HashSet<ChessMove> validMoves, ChessPosition endOption, ChessGame.TeamColor color) {
         if (checkBounds(endOption) &&
                 board.getBoard()[endOption.getRow()-1][endOption.getColumn()-1].getPiece() != null) {
             if (board.getBoard()[endOption.getRow()-1][endOption.getColumn()-1].getPiece().getTeamColor() != color) {
@@ -297,7 +299,8 @@ public class ChessPiece {
         }
     }
 
-    private void validatePromotionCapture(ChessBoard board, ChessPosition myPosition, HashSet<ChessMove> validMoves, ChessPosition endOption, ChessGame.TeamColor color) {
+    private void validatePromotionCapture(ChessBoard board, ChessPosition myPosition, HashSet<ChessMove> validMoves,
+                                          ChessPosition endOption, ChessGame.TeamColor color) {
         if (checkBounds(endOption) &&
                 board.getBoard()[endOption.getRow()-1][endOption.getColumn()-1].getPiece() != null) {
             if (board.getBoard()[endOption.getRow()-1][endOption.getColumn()-1].getPiece().getTeamColor() !=
@@ -309,7 +312,8 @@ public class ChessPiece {
         }
     }
 
-    private void validatePromotionMove(ChessBoard board, ChessPosition myPosition, HashSet<ChessMove> validMoves, ChessPosition endOption) {
+    private void validatePromotionMove(ChessBoard board, ChessPosition myPosition,
+                                       HashSet<ChessMove> validMoves, ChessPosition endOption) {
         if (checkBounds(endOption) &&
                 board.getBoard()[endOption.getRow()-1][endOption.getColumn()-1].getPiece() == null) {
             validMoves.add(new ChessMove(myPosition, endOption, PieceType.QUEEN));

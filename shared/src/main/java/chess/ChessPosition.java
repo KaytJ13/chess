@@ -64,13 +64,6 @@ public class ChessPosition {
         this.piece = piece;
     }
 
-    /**
-     * removes a piece from this position
-     */
-    public void removePiece() {
-        piece = null;
-    }
-
 //    /**
 //     * @return the color of the position/square
 //     */
