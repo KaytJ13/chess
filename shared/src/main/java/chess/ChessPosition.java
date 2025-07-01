@@ -64,13 +64,6 @@ public class ChessPosition {
         this.piece = piece;
     }
 
-//    /**
-//     * @return the color of the position/square
-//     */
-//    public PositionColor getColor() {
-//        return color;
-//    }     // I might need this later (graphics, etc.) but it isn't helpful now
-
     @Override
     public String toString() {
         return '{' + row + ", " + col + '}';

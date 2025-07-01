@@ -301,10 +301,7 @@ public class ChessPiece {
         ChessPosition endOption = new ChessPosition(xEndPos, yEndPos);
         if (checkBounds(endOption) && board.getSquare(endOption).getPiece() != null) {
             if (board.getSquare(endOption).getPiece().getTeamColor() != color) {
-                validMoves.add(new ChessMove(myPosition, endOption, PieceType.QUEEN));
-                validMoves.add(new ChessMove(myPosition, endOption, PieceType.ROOK));
-                validMoves.add(new ChessMove(myPosition, endOption, PieceType.KNIGHT));
-                validMoves.add(new ChessMove(myPosition, endOption, PieceType.BISHOP));                     }
+                addPromotion(myPosition, endOption, validMoves);                     }
         }
     }
 
@@ -312,11 +309,15 @@ public class ChessPiece {
                                        HashSet<ChessMove> validMoves, int xEndPos, int yEndPos) {
         ChessPosition endOption = new ChessPosition(xEndPos, yEndPos);
         if (checkBounds(endOption) && board.getSquare(endOption).getPiece() == null) {
-            validMoves.add(new ChessMove(myPosition, endOption, PieceType.QUEEN));
-            validMoves.add(new ChessMove(myPosition, endOption, PieceType.ROOK));
-            validMoves.add(new ChessMove(myPosition, endOption, PieceType.KNIGHT));
-            validMoves.add(new ChessMove(myPosition, endOption, PieceType.BISHOP));
+            addPromotion(myPosition, endOption, validMoves);
         }
+    }
+
+    private void addPromotion(ChessPosition myPosition, ChessPosition endOption, HashSet<ChessMove> validMoves) {
+        validMoves.add(new ChessMove(myPosition, endOption, PieceType.QUEEN));
+        validMoves.add(new ChessMove(myPosition, endOption, PieceType.ROOK));
+        validMoves.add(new ChessMove(myPosition, endOption, PieceType.KNIGHT));
+        validMoves.add(new ChessMove(myPosition, endOption, PieceType.BISHOP));
     }
 
     /**
