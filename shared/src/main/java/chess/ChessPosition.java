@@ -8,7 +8,7 @@ import java.util.Objects;
  * Note: You can add to this class, but you may not alter
  * signature of the existing methods.
  */
-public class ChessPosition {
+public class ChessPosition implements Cloneable {
 
     private final int row;
     private final int col;
@@ -65,8 +65,22 @@ public class ChessPosition {
     }
 
     @Override
+    protected ChessPosition clone() throws CloneNotSupportedException {
+        ChessPosition cloned = (ChessPosition) super.clone();
+
+        if (getPiece() != null) {
+            ChessPiece clonedPiece = (ChessPiece) getPiece().clone();
+            cloned.setPiece(clonedPiece);
+        } else {
+            cloned.setPiece(null);
+        }
+
+        return cloned;
+    }
+
+    @Override
     public String toString() {
-        return '{' + row + ", " + col + '}';
+        return "{" + row + ", " + col + '}';
     }
 
     @Override

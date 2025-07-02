@@ -11,9 +11,9 @@ import chess.ChessPiece.PieceType;
  * Note: You can add to this class, but you may not alter
  * signature of the existing methods.
  */
-public class ChessBoard {
+public class ChessBoard implements Cloneable {
 
-    private final ChessPosition[][] board;
+    private ChessPosition[][] board;
 
     public ChessBoard() {
         board = new ChessPosition[8][8];
@@ -30,6 +30,10 @@ public class ChessBoard {
      */
     public ChessPosition[][] getBoard() {
         return board;
+    }
+
+    public void setBoard(ChessPosition[][] board) {
+        this.board = board;
     }
 
     /**
@@ -102,6 +106,26 @@ public class ChessBoard {
         //kings
         board[0][4].setPiece(new ChessPiece(TeamColor.WHITE, PieceType.KING));
         board[7][4].setPiece(new ChessPiece(TeamColor.BLACK, PieceType.KING));
+    }
+
+    @Override
+    public ChessBoard clone() {
+        try {
+            ChessBoard cloned = (ChessBoard) super.clone();
+
+            ChessPosition[][] clonedBoard = new ChessPosition[8][8];
+            for (int i = 0; i < 8; i++) {
+                for (int j = 0; j < 8; j++) {
+                    clonedBoard[i][j] = getSquare(new ChessPosition(i+1, j+1).clone());
+                }
+            }
+            cloned.setBoard(clonedBoard);
+
+            return cloned;
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     @Override

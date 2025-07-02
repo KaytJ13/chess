@@ -10,7 +10,7 @@ import java.util.HashSet;
  * Note: You can add to this class, but you may not alter
  * signature of the existing methods.
  */
-public class ChessPiece {
+public class ChessPiece implements Cloneable {
 
     private final ChessGame.TeamColor pieceColor;
     private final ChessPiece.PieceType type;
@@ -328,6 +328,15 @@ public class ChessPiece {
     private boolean checkBounds(ChessPosition position) {
         return position.getRow() <= 8 && position.getRow() >= 1 &&
                 position.getColumn() <= 8 && position.getColumn() >= 1;
+    }
+
+    @Override
+    public ChessPiece clone() {
+        try {
+            return (ChessPiece) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 
     @Override
