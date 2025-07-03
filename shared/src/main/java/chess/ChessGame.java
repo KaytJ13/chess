@@ -84,11 +84,11 @@ public class ChessGame {
         ChessPiece currentPiece = board.getPiece(move.getStartPosition());
         Collection<ChessMove> validatedMoves = validMoves(move.getStartPosition());
         if (validatedMoves == null) {
-            throw new InvalidMoveException("This is not the move you are looking for");
+            throw new InvalidMoveException("Invalid Move");
         } else if (!validatedMoves.contains(move)) {
-            throw new InvalidMoveException("This is not the move you are looking for");
+            throw new InvalidMoveException("Invalid Move");
         } else if (teamTurn != currentPiece.getTeamColor()) {
-            throw new InvalidMoveException("Patience, my young Padawan");
+            throw new InvalidMoveException("Invalid Move: wrong team's turn");
         }
         board.addPiece(move.getStartPosition(), null);
         if (move.getPromotionPiece() != null) {
@@ -112,8 +112,17 @@ public class ChessGame {
         return isInCheckHelper(teamColor, board);
     }
 
+    /**
+     * A helper function; determines if the team is in check on the board specified
+     * @param teamColor which team to check
+     * @param board which board to check
+     * @return True if the specified team is in check on the specified board
+     */
     private boolean isInCheckHelper(TeamColor teamColor, ChessBoard board) {
         ChessPosition kingPosition = findKing(teamColor, board);
+        if (kingPosition == null) {
+            return true; // This should never actually happen, but it yells at me if it's not there
+        }
         for (ChessPosition[] row : board.getBoard()) {
             for (ChessPosition square : row) {
                 if (square.getPiece() != null) {
@@ -132,6 +141,12 @@ public class ChessGame {
         return false;
     }
 
+    /**
+     * Finds the position of the king
+     * @param teamColor the color of the king to be found
+     * @param board which board to search
+     * @return the position of the king
+     */
     private ChessPosition findKing(TeamColor teamColor, ChessBoard board) {
         for (ChessPosition[] row : board.getBoard()) {
             for (ChessPosition square : row) {
