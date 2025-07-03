@@ -69,7 +69,7 @@ public class ChessPosition implements Cloneable {
         ChessPosition cloned = (ChessPosition) super.clone();
 
         if (getPiece() != null) {
-            ChessPiece clonedPiece = (ChessPiece) getPiece().clone();
+            ChessPiece clonedPiece = getPiece().clone();
             cloned.setPiece(clonedPiece);
         } else {
             cloned.setPiece(null);

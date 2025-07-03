@@ -121,7 +121,7 @@ public class ChessGame {
             for (ChessPosition square : row) {
                 if (square.getPiece() != null) {
                     if (square.getPiece().getTeamColor() != teamColor) {
-                        Collection<ChessMove> potentialMoves = square.getPiece().pieceMoves(board, square); //validMoves(square);
+                        Collection<ChessMove> potentialMoves = square.getPiece().pieceMoves(board, square);
                         for (ChessMove move : potentialMoves) {
                             if (move.getEndPosition().getColumn() == kingPosition.getColumn() &&
                                     move.getEndPosition().getRow() == kingPosition.getRow()) {
