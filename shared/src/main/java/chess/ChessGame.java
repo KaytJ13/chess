@@ -114,9 +114,6 @@ public class ChessGame {
 
     private boolean isInCheckHelper(TeamColor teamColor, ChessBoard board) {
         ChessPosition kingPosition = findKing(teamColor, board);
-        if (kingPosition == null) {
-            return true; // This should never actually happen, but it yells at me if it's not there
-        }
         for (ChessPosition[] row : board.getBoard()) {
             for (ChessPosition square : row) {
                 if (square.getPiece() != null) {
