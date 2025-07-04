@@ -286,6 +286,15 @@ public class ChessPiece implements Cloneable {
         return validMoves;
     }
 
+    /**
+     * Checks whether a capture move is valid for a pawn
+     * @param board the board being played
+     * @param myPosition the position of the piece
+     * @param validMoves the set storing moves that are validated
+     * @param xEndPos the x coordinate for the end position of the proposed move
+     * @param yEndPos the y coordinate for the end position of the proposed move
+     * @param color the team's color
+     */
     private void validateCapture(ChessBoard board, ChessPosition myPosition,
                                  HashSet<ChessMove> validMoves, int xEndPos, int yEndPos, ChessGame.TeamColor color) {
         ChessPosition endOption = new ChessPosition(xEndPos, yEndPos);
@@ -296,6 +305,15 @@ public class ChessPiece implements Cloneable {
         }
     }
 
+    /**
+     * Checks whether a capture move is valid for a pawn that is also being promoted
+     * @param board the board being played
+     * @param myPosition the position of the piece
+     * @param validMoves the set storing moves that are validated
+     * @param xEndPos the x coordinate for the end position of the proposed move
+     * @param yEndPos the y coordinate for the end position of the proposed move
+     * @param color the team's color
+     */
     private void validatePromotionCapture(ChessBoard board, ChessPosition myPosition, HashSet<ChessMove> validMoves,
                                           int xEndPos, int yEndPos, ChessGame.TeamColor color) {
         ChessPosition endOption = new ChessPosition(xEndPos, yEndPos);
@@ -305,6 +323,14 @@ public class ChessPiece implements Cloneable {
         }
     }
 
+    /**
+     * Checks whether a pawn's move is valid in the case of a promotion also occurring
+     * @param board the board being played
+     * @param myPosition the position of the piece
+     * @param validMoves the set storing moves that are validated
+     * @param xEndPos the x coordinate for the end position of the proposed move
+     * @param yEndPos the y coordinate for the end position of the proposed move
+     */
     private void validatePromotionMove(ChessBoard board, ChessPosition myPosition,
                                        HashSet<ChessMove> validMoves, int xEndPos, int yEndPos) {
         ChessPosition endOption = new ChessPosition(xEndPos, yEndPos);
@@ -313,6 +339,12 @@ public class ChessPiece implements Cloneable {
         }
     }
 
+    /**
+     * Adds moves to a set when the move is a pawn promotion
+     * @param myPosition the starting position of the piece
+     * @param endOption the end position of the move
+     * @param validMoves the set of verified moves that is being updated
+     */
     private void addPromotion(ChessPosition myPosition, ChessPosition endOption, HashSet<ChessMove> validMoves) {
         validMoves.add(new ChessMove(myPosition, endOption, PieceType.QUEEN));
         validMoves.add(new ChessMove(myPosition, endOption, PieceType.ROOK));
