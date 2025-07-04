@@ -164,10 +164,10 @@ public class ChessPiece implements Cloneable {
                                HashSet<ChessMove> validMoves, int xPosition, int yPosition) {
         ChessPosition endOption = new ChessPosition(xPosition, yPosition);
         if (checkBounds(endOption)) {
-            if (board.getSquare(endOption).getPiece() == null) {
+            if (board.getPiece(endOption) == null) {
                 validMoves.add(new ChessMove(myPosition, endOption, null));
                 return true;
-            } else if (board.getSquare(endOption).getPiece().getTeamColor() != pieceColor){
+            } else if (board.getPiece(endOption).getTeamColor() != pieceColor){
                 validMoves.add(new ChessMove(myPosition, endOption, null));
             }
         }
@@ -298,8 +298,8 @@ public class ChessPiece implements Cloneable {
     private void validateCapture(ChessBoard board, ChessPosition myPosition,
                                  HashSet<ChessMove> validMoves, int xEndPos, int yEndPos, ChessGame.TeamColor color) {
         ChessPosition endOption = new ChessPosition(xEndPos, yEndPos);
-        if (checkBounds(endOption) && board.getSquare(endOption).getPiece() != null) {
-            if (board.getSquare(endOption).getPiece().getTeamColor() != color) {
+        if (checkBounds(endOption) && board.getPiece(endOption) != null) {
+            if (board.getPiece(endOption).getTeamColor() != color) {
                 validMoves.add(new ChessMove(myPosition, endOption, null));
             }
         }
@@ -317,8 +317,8 @@ public class ChessPiece implements Cloneable {
     private void validatePromotionCapture(ChessBoard board, ChessPosition myPosition, HashSet<ChessMove> validMoves,
                                           int xEndPos, int yEndPos, ChessGame.TeamColor color) {
         ChessPosition endOption = new ChessPosition(xEndPos, yEndPos);
-        if (checkBounds(endOption) && board.getSquare(endOption).getPiece() != null) {
-            if (board.getSquare(endOption).getPiece().getTeamColor() != color) {
+        if (checkBounds(endOption) && board.getPiece(endOption) != null) {
+            if (board.getPiece(endOption).getTeamColor() != color) {
                 addPromotion(myPosition, endOption, validMoves);                     }
         }
     }
@@ -334,7 +334,7 @@ public class ChessPiece implements Cloneable {
     private void validatePromotionMove(ChessBoard board, ChessPosition myPosition,
                                        HashSet<ChessMove> validMoves, int xEndPos, int yEndPos) {
         ChessPosition endOption = new ChessPosition(xEndPos, yEndPos);
-        if (checkBounds(endOption) && board.getSquare(endOption).getPiece() == null) {
+        if (checkBounds(endOption) && board.getPiece(endOption) == null) {
             addPromotion(myPosition, endOption, validMoves);
         }
     }

@@ -32,6 +32,10 @@ public class ChessBoard implements Cloneable {
         return board;
     }
 
+    /**
+     * Sets the board to a different board
+     * @param board the board to be saved
+     */
     public void setBoard(ChessPosition[][] board) {
         this.board = board;
     }
@@ -59,6 +63,11 @@ public class ChessBoard implements Cloneable {
         return currentSquare.getPiece();
     }
 
+    /**
+     * Returns the position on this board at the given location
+     * @param position the location to be retrieved
+     * @return the position object on this board
+     */
     public ChessPosition getSquare(ChessPosition position) {
         return board[position.getRow()-1][position.getColumn()-1];
     }
