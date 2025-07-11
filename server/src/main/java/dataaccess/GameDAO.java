@@ -1,5 +1,6 @@
 package dataaccess;
 
+import chess.ChessGame;
 import model.GameData;
 
 public interface GameDAO {
@@ -7,10 +8,12 @@ public interface GameDAO {
 
     public void clear();
 
-    public GameData getGame(int GameID);
+    public GameData getGame(int gameID);
 
-    public GameData createGame(String gameName);
+    public void createGame(GameData data);
 
-    public GameData[] listGames(String playerColor, String username); //playerColor will probably actually be an enum somewhere, not a string
+    public GameData[] listGames();
+
+    public void updateGame (int gameID, ChessGame.TeamColor playerColor, String username); //playerColor will probably actually be an enum somewhere, not a string
 
 }

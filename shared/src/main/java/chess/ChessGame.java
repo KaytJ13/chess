@@ -126,15 +126,22 @@ public class ChessGame {
         for (ChessPosition[] row : board.getBoard()) {
             for (ChessPosition square : row) {
                 if (square.getPiece() != null) {
-                    if (square.getPiece().getTeamColor() != teamColor) {
-                        Collection<ChessMove> potentialMoves = square.getPiece().pieceMoves(board, square);
-                        for (ChessMove move : potentialMoves) {
-                            if (move.getEndPosition().getColumn() == kingPosition.getColumn() &&
-                                    move.getEndPosition().getRow() == kingPosition.getRow()) {
-                                return true;
-                            }
-                        }
+                    if (checkSquareDanger(teamColor, board, square, kingPosition)) {
+                        return true;
                     }
+                }
+            }
+        }
+        return false;
+    }
+
+    private static boolean checkSquareDanger(TeamColor teamColor, ChessBoard board, ChessPosition square, ChessPosition kingPosition) {
+        if (square.getPiece().getTeamColor() != teamColor) {
+            Collection<ChessMove> potentialMoves = square.getPiece().pieceMoves(board, square);
+            for (ChessMove move : potentialMoves) {
+                if (move.getEndPosition().getColumn() == kingPosition.getColumn() &&
+                        move.getEndPosition().getRow() == kingPosition.getRow()) {
+                    return true;
                 }
             }
         }
@@ -151,14 +158,22 @@ public class ChessGame {
         for (ChessPosition[] row : board.getBoard()) {
             for (ChessPosition square : row) {
                 if (square.getPiece() != null) {
-                    if (square.getPiece().getPieceType() == ChessPiece.PieceType.KING &&
-                            square.getPiece().getTeamColor() == teamColor) {
-                        return square;
+                    ChessPosition square1 = checkSquareForKing(teamColor, square);
+                    if (square1 != null) {
+                        return square1;
                     }
                 }
             }
         }
         return null; // to clarify, this should never happen
+    }
+
+    private static ChessPosition checkSquareForKing(TeamColor teamColor, ChessPosition square) {
+        if (square.getPiece().getPieceType() == ChessPiece.PieceType.KING &&
+                square.getPiece().getTeamColor() == teamColor) {
+            return square;
+        }
+        return null;
     }
 
     /**
@@ -192,16 +207,23 @@ public class ChessGame {
         for (ChessPosition[] row : board.getBoard()) {
             for (ChessPosition square : row) {
                 if (square.getPiece() != null) {
-                    if (square.getPiece().getTeamColor() == teamColor) {
-                        Collection<ChessMove> potentialMoves = validMoves(square);
-                        if (!potentialMoves.isEmpty()) {
-                            return false;
-                        }
+                    if (checkSquareMoves(teamColor, square)) {
+                        return false;
                     }
                 }
             }
         }
         return true;
+    }
+
+    private boolean checkSquareMoves(TeamColor teamColor, ChessPosition square) {
+        if (square.getPiece().getTeamColor() == teamColor) {
+            Collection<ChessMove> potentialMoves = validMoves(square);
+            if (!potentialMoves.isEmpty()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
