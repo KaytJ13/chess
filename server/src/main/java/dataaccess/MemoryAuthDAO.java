@@ -5,25 +5,25 @@ import model.AuthData;
 import java.util.HashSet;
 
 public class MemoryAuthDAO implements AuthDAO {
-    private final HashSet<AuthData> AuthDB;
+    private final HashSet<AuthData> authDB;
 
     public MemoryAuthDAO () {
-        this.AuthDB = new HashSet<>();
+        this.authDB = new HashSet<>();
     };
 
     @Override
     public void clear() {
-        AuthDB.clear();
+        authDB.clear();
     };
 
     @Override
     public void createAuth(AuthData data) {
-        AuthDB.add(data);
+        authDB.add(data);
     };
 
     @Override
     public AuthData getAuth(String authToken) {
-        for (AuthData data : AuthDB) {
+        for (AuthData data : authDB) {
             if (data.authToken() == authToken) {
                 return data;
             }
@@ -33,6 +33,6 @@ public class MemoryAuthDAO implements AuthDAO {
 
     @Override
     public void deleteAuth(AuthData data) {
-        AuthDB.remove(data);
+        authDB.remove(data);
     };
 }

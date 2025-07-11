@@ -14,6 +14,6 @@ public interface GameDAO {
 
     public GameData[] listGames();
 
-    public void updateGame (int gameID, ChessGame.TeamColor playerColor, String username); //playerColor will probably actually be an enum somewhere, not a string
+    public void updateGame (int gameID, ChessGame.TeamColor playerColor, String username);
 
 }
