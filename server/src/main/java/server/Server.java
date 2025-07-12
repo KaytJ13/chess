@@ -2,7 +2,7 @@ package server;
 
 import dataaccess.*;
 import handlers.*;
-import services.ClearService;
+import services.*;
 import spark.*;
 
 public class Server {
@@ -18,13 +18,17 @@ public class Server {
         UserDAO userDAO = new MemoryUserDAO();
         AuthDAO authDAO = new MemoryAuthDAO();
         GameDAO gameDAO = new MemoryGameDAO();
+
+        GameService gameService = new GameService(userDAO, authDAO, gameDAO);
+        UserService userService = new UserService(userDAO, authDAO, gameDAO);
+
         this.clearHandler = new ClearHandler(new ClearService(userDAO, authDAO, gameDAO));
-        this.createGameHandler = new CreateGameHandler();
-        this.joinGameHandler = new JoinGameHandler();
-        this.listGamesHandler = new ListGamesHandler();
-        this.loginHandler = new LoginHandler();
-        this.logoutHandler = new LogoutHandler();
-        this.registerHandler = new RegisterHandler();
+        this.createGameHandler = new CreateGameHandler(gameService);
+        this.joinGameHandler = new JoinGameHandler(gameService);
+        this.listGamesHandler = new ListGamesHandler(gameService);
+        this.loginHandler = new LoginHandler(userService);
+        this.logoutHandler = new LogoutHandler(userService);
+        this.registerHandler = new RegisterHandler(userService);
     }
 
     public int run(int desiredPort) {
