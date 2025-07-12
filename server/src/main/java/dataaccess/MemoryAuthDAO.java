@@ -32,7 +32,10 @@ public class MemoryAuthDAO implements AuthDAO {
     };
 
     @Override
-    public void deleteAuth(AuthData data) {
+    public void deleteAuth(AuthData data) throws DataAccessException {
+        if (!authDB.contains(data)) {
+            throw new DataAccessException("This AuthData is not in the database");
+        }
         authDB.remove(data);
     };
 }
