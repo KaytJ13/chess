@@ -9,17 +9,17 @@ public class MemoryAuthDAO implements AuthDAO {
 
     public MemoryAuthDAO () {
         this.authDB = new HashSet<>();
-    };
+    }
 
     @Override
     public void clear() {
         authDB.clear();
-    };
+    }
 
     @Override
     public void createAuth(AuthData data) {
         authDB.add(data);
-    };
+    }
 
     @Override
     public AuthData getAuth(String authToken) {
@@ -29,7 +29,7 @@ public class MemoryAuthDAO implements AuthDAO {
             }
         }
         return null;
-    };
+    }
 
     @Override
     public void deleteAuth(AuthData data) throws DataAccessException {
@@ -37,5 +37,5 @@ public class MemoryAuthDAO implements AuthDAO {
             throw new DataAccessException("This AuthData is not in the database");
         }
         authDB.remove(data);
-    };
+    }
 }
