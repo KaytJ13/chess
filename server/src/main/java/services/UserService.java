@@ -1,6 +1,7 @@
 package services;
 
 import dataaccess.AuthDAO;
+import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
 import dataaccess.UserDAO;
 import exception.ResponseException;
@@ -57,7 +58,11 @@ public class UserService {
         return auth;
     }
 
-    public void logout(LogoutHandler.LogoutRequest logoutRequest) throws ResponseException {
-
+    public void logout(String authToken) throws ResponseException, DataAccessException {
+        AuthData authData = authDAO.getAuth(authToken);
+        if (authData == null) {
+            throw new ResponseException(401, "Error: unauthorized");
+        }
+        authDAO.deleteAuth(authData);
     }
 }

@@ -43,6 +43,7 @@ public class Server {
         Spark.delete("/db", this::clear);
         Spark.post("/user", this::register);
         Spark.post("/session", this::login);
+        Spark.delete("/session", this::logout);
 
         //This line initializes the server and can be removed once you have a functioning endpoint 
         Spark.init();
@@ -87,5 +88,17 @@ public class Server {
         }
         res.status(200);
         return authResult;
+    }
+
+    private Object logout(Request req, Response res) {
+        try {
+            logoutHandler.logout(req.headers("authorization"));
+        } catch (ResponseException e) {
+            return exceptionHandler(e, req, res);
+        } catch (DataAccessException e) {
+            return exceptionHandler(new ResponseException(401, "Error: unauthorized"), req, res);
+        }
+        res.status(200);
+        return "";
     }
 }

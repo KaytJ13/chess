@@ -3,6 +3,7 @@ package dataaccess;
 import model.AuthData;
 
 import java.util.HashSet;
+import java.util.Objects;
 
 public class MemoryAuthDAO implements AuthDAO {
     private final HashSet<AuthData> authDB;
@@ -24,7 +25,7 @@ public class MemoryAuthDAO implements AuthDAO {
     @Override
     public AuthData getAuth(String authToken) {
         for (AuthData data : authDB) {
-            if (data.authToken() == authToken) {
+            if (Objects.equals(data.authToken(), authToken)) {
                 return data;
             }
         }

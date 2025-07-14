@@ -1,17 +1,18 @@
 package handlers;
 
+import com.google.gson.Gson;
+import dataaccess.DataAccessException;
+import exception.ResponseException;
 import services.UserService;
 
 public class LogoutHandler {
-    private UserService userService;
+    private final UserService userService;
 
     public LogoutHandler(UserService userService) {
         this.userService = userService;
     }
 
-    public record LogoutRequest(String authToken) {}
-
-    public void logout(String jsonBody) {
-
+    public void logout(String authToken) throws ResponseException, DataAccessException {
+        userService.logout(authToken);
     }
 }
