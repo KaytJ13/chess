@@ -1,5 +1,6 @@
 package handlers;
 
+import exception.ResponseException;
 import model.AuthData;
 import services.UserService;
 import com.google.gson.Gson;
@@ -13,7 +14,8 @@ public class RegisterHandler {
 
     public record RegisterRequest(String username, String password, String email) { }
 
-    public AuthData register(String jsonBody) {
-        return userService.register(new Gson().fromJson(jsonBody, RegisterRequest.class));
+    public AuthData register(String jsonBody) throws ResponseException {
+        RegisterRequest request = new Gson().fromJson(jsonBody, RegisterRequest.class);
+        return userService.register(request);
     }
 }

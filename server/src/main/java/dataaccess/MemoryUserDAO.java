@@ -3,6 +3,7 @@ package dataaccess;
 import model.UserData;
 
 import java.util.HashSet;
+import java.util.Objects;
 
 public class MemoryUserDAO implements UserDAO {
     private final HashSet<UserData> userDB;
@@ -24,7 +25,7 @@ public class MemoryUserDAO implements UserDAO {
     @Override
     public UserData getUser(String username) {
         for (UserData data : userDB) {
-            if (data.username() == username) {
+            if (Objects.equals(data.username(), username)) {
                 return data;
             }
         }

@@ -2,6 +2,7 @@ package server;
 
 import com.google.gson.Gson;
 import dataaccess.*;
+import exception.ResponseException;
 import handlers.*;
 import model.AuthData;
 import services.*;
@@ -41,6 +42,7 @@ public class Server {
         // Register your endpoints and handle exceptions here.
         Spark.delete("/db", this::clear);
         Spark.post("/user", this::register);
+        Spark.exception(ResponseException.class, this::exceptionHandler);
 
         //This line initializes the server and can be removed once you have a functioning endpoint 
         Spark.init();
@@ -60,13 +62,17 @@ public class Server {
         return "";
     }
 
+    private String exceptionHandler(ResponseException ex, Request req, Response res) {
+        res.status(ex.getStatusCode());
+        return ex.toJson();
+    }
+
     private Object register(Request req, Response res) {
         AuthData authResult;
         try {
-            authResult = registerHandler.register(res.body());
-        } catch (AlreadyTakenException e) {
-            res.status(403);
-            return new Gson().toJson(e);
+            authResult = registerHandler.register(req.body());
+        } catch (ResponseException e) {
+            return exceptionHandler(e, req, res);
         }
         res.status(200);
         return new Gson().toJson(authResult);

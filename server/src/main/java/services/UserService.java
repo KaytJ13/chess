@@ -3,6 +3,7 @@ package services;
 import dataaccess.AuthDAO;
 import dataaccess.GameDAO;
 import dataaccess.UserDAO;
+import exception.ResponseException;
 import handlers.RegisterHandler;
 import model.AuthData;
 import model.UserData;
@@ -24,13 +25,18 @@ public class UserService {
         return UUID.randomUUID().toString();
     }
 
-    public AuthData register(RegisterHandler.RegisterRequest registerRequest) {
+    public AuthData register(RegisterHandler.RegisterRequest registerRequest) throws ResponseException {
+        //Check if anything is null ==> Bad Request
+        if (registerRequest.email() == null || registerRequest.password() == null || registerRequest.username() == null) {
+            throw new ResponseException(400, "Error: bad request");
+        }
+        //Also, go into Server and edit the Json for the error so that it returns a json and not a string
         if (userDAO.getUser(registerRequest.username()) != null) {
-            throw new AlreadyTakenException("Error: username already taken");
+            throw new ResponseException(403, "Error: username already taken");
         }
         UserData user = new UserData(registerRequest.username(), registerRequest.password(), registerRequest.email());
         userDAO.createUser(user);
-        AuthData auth = new AuthData(generateToken(), registerRequest.username());
+        AuthData auth = new AuthData(registerRequest.username(), generateToken());
         authDAO.createAuth(auth);
         return auth;
     }
