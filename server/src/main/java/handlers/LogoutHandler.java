@@ -1,6 +1,5 @@
 package handlers;
 
-import com.google.gson.Gson;
 import dataaccess.DataAccessException;
 import exception.ResponseException;
 import services.UserService;

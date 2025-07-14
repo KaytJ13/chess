@@ -6,14 +6,14 @@ import model.GameData;
 public interface GameDAO {
     //Create, read, update, delete
 
-    public void clear();
+    void clear();
 
-    public GameData getGame(int gameID);
+    GameData getGame(int gameID);
 
-    public void createGame(GameData data);
+    void createGame(GameData data);
 
-    public GameData[] listGames();
+    GameData[] listGames();
 
-    public void updateGame (int gameID, ChessGame.TeamColor playerColor, String username) throws DataAccessException;
+    void updateGame (int gameID, ChessGame.TeamColor playerColor, String username) throws DataAccessException;
 
 }

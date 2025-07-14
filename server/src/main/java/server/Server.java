@@ -1,10 +1,8 @@
 package server;
 
-import com.google.gson.Gson;
 import dataaccess.*;
 import exception.ResponseException;
 import handlers.*;
-import model.AuthData;
 import services.*;
 import spark.*;
 
@@ -22,8 +20,8 @@ public class Server {
         AuthDAO authDAO = new MemoryAuthDAO();
         GameDAO gameDAO = new MemoryGameDAO();
 
-        GameService gameService = new GameService(userDAO, authDAO, gameDAO);
-        UserService userService = new UserService(userDAO, authDAO, gameDAO);
+        GameService gameService = new GameService(authDAO, gameDAO);
+        UserService userService = new UserService(userDAO, authDAO);
 
         this.clearHandler = new ClearHandler(new ClearService(userDAO, authDAO, gameDAO));
         this.createGameHandler = new CreateGameHandler(gameService);
@@ -72,14 +70,14 @@ public class Server {
     }
 
     private Object register(Request req, Response res) {
-        AuthData authResult;
+        Object authResult;
         try {
             authResult = registerHandler.register(req.body());
         } catch (ResponseException e) {
             return exceptionHandler(e, res);
         }
         res.status(200);
-        return new Gson().toJson(authResult);
+        return authResult;
     }
 
     private Object login(Request req, Response res) {

@@ -4,7 +4,6 @@ import chess.ChessGame;
 import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
-import dataaccess.UserDAO;
 import exception.ResponseException;
 import handlers.JoinGameHandler;
 import handlers.ListGamesHandler;
@@ -17,11 +16,9 @@ public class GameService {
     // createGame, joinGame, listGames
     private final GameDAO gameDAO;
     private final AuthDAO authDAO;
-    private final UserDAO userDAO;
 
-    public GameService(UserDAO userDAO, AuthDAO authDAO, GameDAO gameDAO) {
+    public GameService(AuthDAO authDAO, GameDAO gameDAO) {
         this.authDAO = authDAO;
-        this.userDAO = userDAO;
         this.gameDAO = gameDAO;
     }
 
@@ -29,7 +26,9 @@ public class GameService {
         AuthData authData = authDAO.getAuth(authToken);
         if (authData == null) {
             return false;
-        } else return Objects.equals(authData.authToken(), authToken);
+        } else {
+            return Objects.equals(authData.authToken(), authToken);
+        }
     }
 
     public int createGame(String gameName, String authToken) throws ResponseException {

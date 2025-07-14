@@ -2,7 +2,6 @@ package services;
 
 import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
-import dataaccess.GameDAO;
 import dataaccess.UserDAO;
 import exception.ResponseException;
 import handlers.LoginHandler.LoginRequest;
@@ -15,14 +14,12 @@ import java.util.UUID;
 
 public class UserService {
     // login, logout, createUser
-    private UserDAO userDAO;
-    private AuthDAO authDAO;
-    private GameDAO gameDAO;
+    private final UserDAO userDAO;
+    private final AuthDAO authDAO;
 
-    public UserService(UserDAO userDAO, AuthDAO authDAO, GameDAO gameDAO) {
+    public UserService(UserDAO userDAO, AuthDAO authDAO) {
         this.authDAO = authDAO;
         this.userDAO = userDAO;
-        this.gameDAO = gameDAO;
     }
 
     public static String generateToken() {

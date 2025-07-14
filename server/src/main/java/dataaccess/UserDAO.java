@@ -5,10 +5,10 @@ import model.UserData;
 public interface UserDAO {
     //Create, read, update, delete
 
-    public void clear();
+    void clear();
 
-    public void createUser(UserData userData);
+    void createUser(UserData userData);
 
-    public UserData getUser(String username);
+    UserData getUser(String username);
 
 }

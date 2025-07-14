@@ -7,7 +7,7 @@ import exception.ResponseException;
 import services.GameService;
 
 public class JoinGameHandler {
-    private GameService gameService;
+    private final GameService gameService;
 
     public JoinGameHandler(GameService gameService) {
         this.gameService = gameService;
