@@ -35,10 +35,8 @@ public class MemoryGameDAO implements GameDAO{
     @Override
     public GameData[] listGames() {
         GameData[] gameList = new GameData[gameDB.size()];
-        int counter = 0;
         for (GameData game : gameDB) {
-            gameList[counter] = game;
-            counter++;
+            gameList[game.gameID()-1] = game;
         }
         return gameList;
     }

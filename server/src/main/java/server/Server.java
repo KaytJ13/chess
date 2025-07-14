@@ -45,6 +45,7 @@ public class Server {
         Spark.post("/session", this::login);
         Spark.delete("/session", this::logout);
         Spark.post("/game", this::createGame);
+        Spark.get("/game", this::listGames);
 
         //This line initializes the server and can be removed once you have a functioning endpoint 
         Spark.init();
@@ -64,7 +65,7 @@ public class Server {
         return "";
     }
 
-    private String exceptionHandler(ResponseException ex, Request req, Response res) {
+    private String exceptionHandler(ResponseException ex, Response res) {
         res.status(ex.getStatusCode());
         return ex.toJson();
     }
@@ -74,7 +75,7 @@ public class Server {
         try {
             authResult = registerHandler.register(req.body());
         } catch (ResponseException e) {
-            return exceptionHandler(e, req, res);
+            return exceptionHandler(e, res);
         }
         res.status(200);
         return new Gson().toJson(authResult);
@@ -85,7 +86,7 @@ public class Server {
         try {
             authResult = loginHandler.login(req.body());
         } catch (ResponseException e) {
-            return exceptionHandler(e, req, res);
+            return exceptionHandler(e, res);
         }
         res.status(200);
         return authResult;
@@ -95,9 +96,9 @@ public class Server {
         try {
             logoutHandler.logout(req.headers("authorization"));
         } catch (ResponseException e) {
-            return exceptionHandler(e, req, res);
+            return exceptionHandler(e, res);
         } catch (DataAccessException e) {
-            return exceptionHandler(new ResponseException(500, "Error: " + e.getMessage()), req, res);
+            return exceptionHandler(new ResponseException(500, "Error: " + e.getMessage()), res);
         }
         res.status(200);
         return "";
@@ -108,9 +109,20 @@ public class Server {
         try {
             gameResponse = createGameHandler.createGame(req.body(), req.headers("authorization"));
         } catch (ResponseException e) {
-            return exceptionHandler(e, req, res);
+            return exceptionHandler(e, res);
         }
         res.status(200);
         return gameResponse;
+    }
+
+    private Object listGames(Request req, Response res) {
+        Object gameList;
+        try {
+            gameList = listGamesHandler.listGames(req.headers("authorization"));
+        } catch (ResponseException e) {
+            return exceptionHandler(e, res);
+        }
+        res.status();
+        return gameList;
     }
 }
