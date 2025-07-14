@@ -42,7 +42,7 @@ public class Server {
         // Register your endpoints and handle exceptions here.
         Spark.delete("/db", this::clear);
         Spark.post("/user", this::register);
-        Spark.exception(ResponseException.class, this::exceptionHandler);
+        Spark.post("/session", this::login);
 
         //This line initializes the server and can be removed once you have a functioning endpoint 
         Spark.init();
@@ -76,5 +76,16 @@ public class Server {
         }
         res.status(200);
         return new Gson().toJson(authResult);
+    }
+
+    private Object login(Request req, Response res) {
+        String authResult;
+        try {
+            authResult = loginHandler.login(req.body());
+        } catch (ResponseException e) {
+            return exceptionHandler(e, req, res);
+        }
+        res.status(200);
+        return authResult;
     }
 }

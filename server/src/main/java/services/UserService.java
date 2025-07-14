@@ -4,9 +4,13 @@ import dataaccess.AuthDAO;
 import dataaccess.GameDAO;
 import dataaccess.UserDAO;
 import exception.ResponseException;
+import handlers.LoginHandler;
+import handlers.LogoutHandler;
 import handlers.RegisterHandler;
 import model.AuthData;
 import model.UserData;
+
+import java.util.Objects;
 import java.util.UUID;
 
 public class UserService {
@@ -30,7 +34,6 @@ public class UserService {
         if (registerRequest.email() == null || registerRequest.password() == null || registerRequest.username() == null) {
             throw new ResponseException(400, "Error: bad request");
         }
-        //Also, go into Server and edit the Json for the error so that it returns a json and not a string
         if (userDAO.getUser(registerRequest.username()) != null) {
             throw new ResponseException(403, "Error: username already taken");
         }
@@ -39,5 +42,22 @@ public class UserService {
         AuthData auth = new AuthData(registerRequest.username(), generateToken());
         authDAO.createAuth(auth);
         return auth;
+    }
+
+    public AuthData login(LoginHandler.LoginRequest loginRequest) throws ResponseException {
+        if (loginRequest.username() == null || loginRequest.password() == null) {
+            throw new ResponseException(400, "Error: bad request");
+        }
+        UserData userData = userDAO.getUser(loginRequest.username());
+        if (userData == null || !Objects.equals(userData.password(), loginRequest.password())) {
+            throw new ResponseException(401, "Error: unauthorized");
+        }
+        AuthData auth = new AuthData(loginRequest.username(), generateToken());
+        authDAO.createAuth(auth);
+        return auth;
+    }
+
+    public void logout(LogoutHandler.LogoutRequest logoutRequest) throws ResponseException {
+
     }
 }
