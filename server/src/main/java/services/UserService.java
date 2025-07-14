@@ -5,9 +5,8 @@ import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
 import dataaccess.UserDAO;
 import exception.ResponseException;
-import handlers.LoginHandler;
-import handlers.LogoutHandler;
-import handlers.RegisterHandler;
+import handlers.LoginHandler.LoginRequest;
+import handlers.RegisterHandler.RegisterRequest;
 import model.AuthData;
 import model.UserData;
 
@@ -30,9 +29,10 @@ public class UserService {
         return UUID.randomUUID().toString();
     }
 
-    public AuthData register(RegisterHandler.RegisterRequest registerRequest) throws ResponseException {
+    public AuthData register(RegisterRequest registerRequest) throws ResponseException {
         //Check if anything is null ==> Bad Request
-        if (registerRequest.email() == null || registerRequest.password() == null || registerRequest.username() == null) {
+        if (registerRequest.email() == null || registerRequest.password() == null ||
+                registerRequest.username() == null) {
             throw new ResponseException(400, "Error: bad request");
         }
         if (userDAO.getUser(registerRequest.username()) != null) {
@@ -45,7 +45,7 @@ public class UserService {
         return auth;
     }
 
-    public AuthData login(LoginHandler.LoginRequest loginRequest) throws ResponseException {
+    public AuthData login(LoginRequest loginRequest) throws ResponseException {
         if (loginRequest.username() == null || loginRequest.password() == null) {
             throw new ResponseException(400, "Error: bad request");
         }

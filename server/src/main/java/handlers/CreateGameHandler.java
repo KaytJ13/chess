@@ -1,11 +1,23 @@
 package handlers;
 
+import com.google.gson.Gson;
+import exception.ResponseException;
 import services.GameService;
 
+import java.util.Map;
+
 public class CreateGameHandler {
-    private GameService gameService;
+    private final GameService gameService;
 
     public CreateGameHandler(GameService gameService) {
         this.gameService = gameService;
+    }
+
+    public record CreateGameRequest(String gameName) {}
+
+    public Object createGame(String jsonBody, String authToken) throws ResponseException {
+        CreateGameRequest gameRequest = new Gson().fromJson(jsonBody, CreateGameRequest.class);
+        int gameID = gameService.createGame(gameRequest.gameName(), authToken);
+        return new Gson().toJson(Map.of("gameID", gameID));
     }
 }

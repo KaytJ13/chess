@@ -44,6 +44,7 @@ public class Server {
         Spark.post("/user", this::register);
         Spark.post("/session", this::login);
         Spark.delete("/session", this::logout);
+        Spark.post("/game", this::createGame);
 
         //This line initializes the server and can be removed once you have a functioning endpoint 
         Spark.init();
@@ -96,9 +97,20 @@ public class Server {
         } catch (ResponseException e) {
             return exceptionHandler(e, req, res);
         } catch (DataAccessException e) {
-            return exceptionHandler(new ResponseException(401, "Error: unauthorized"), req, res);
+            return exceptionHandler(new ResponseException(500, "Error: " + e.getMessage()), req, res);
         }
         res.status(200);
         return "";
+    }
+
+    private Object createGame(Request req, Response res) {
+        Object gameResponse;
+        try {
+            gameResponse = createGameHandler.createGame(req.body(), req.headers("authorization"));
+        } catch (ResponseException e) {
+            return exceptionHandler(e, req, res);
+        }
+        res.status(200);
+        return gameResponse;
     }
 }
