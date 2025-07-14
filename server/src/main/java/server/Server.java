@@ -46,6 +46,7 @@ public class Server {
         Spark.delete("/session", this::logout);
         Spark.post("/game", this::createGame);
         Spark.get("/game", this::listGames);
+        Spark.put("/game", this::joinGame);
 
         //This line initializes the server and can be removed once you have a functioning endpoint 
         Spark.init();
@@ -124,5 +125,17 @@ public class Server {
         }
         res.status();
         return gameList;
+    }
+
+    private Object joinGame(Request req, Response res) {
+        try {
+            joinGameHandler.joinGame(req.body(), req.headers("authorization"));
+        } catch (ResponseException e) {
+            return exceptionHandler(e, res);
+        } catch (DataAccessException e) {
+            return exceptionHandler(new ResponseException(500, "Error: " + e.getMessage()), res);
+        }
+        res.status();
+        return "";
     }
 }

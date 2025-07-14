@@ -2,9 +2,11 @@ package services;
 
 import chess.ChessGame;
 import dataaccess.AuthDAO;
+import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
 import dataaccess.UserDAO;
 import exception.ResponseException;
+import handlers.JoinGameHandler;
 import handlers.ListGamesHandler;
 import model.AuthData;
 import model.GameData;
@@ -23,14 +25,18 @@ public class GameService {
         this.gameDAO = gameDAO;
     }
 
+    private Boolean matchAuth(String authToken) {
+        AuthData authData = authDAO.getAuth(authToken);
+        if (authData == null) {
+            return false;
+        } else return Objects.equals(authData.authToken(), authToken);
+    }
+
     public int createGame(String gameName, String authToken) throws ResponseException {
         if (gameName == null || authToken == null) {
             throw new ResponseException(400, "Error: bad request");
         }
-        AuthData authData = authDAO.getAuth(authToken);
-        if (authData == null) {
-            throw new ResponseException(401, "Error: unauthorized");
-        } else if (!Objects.equals(authData.authToken(), authToken)) {
+        if (!matchAuth(authToken)) {
             throw new ResponseException(401, "Error: unauthorized");
         }
         int gameID = 1;
@@ -48,10 +54,7 @@ public class GameService {
         if (authToken == null) {
             throw new ResponseException(400, "Error: bad request");
         }
-        AuthData authData = authDAO.getAuth(authToken);
-        if (authData == null) {
-            throw new ResponseException(401, "Error: unauthorized");
-        } else if (!Objects.equals(authData.authToken(), authToken)) {
+        if (!matchAuth(authToken)) {
             throw new ResponseException(401, "Error: unauthorized");
         }
         GameData[] gameList = gameDAO.listGames();
@@ -63,5 +66,25 @@ public class GameService {
             finalGameList[i] = updatedData;
         }
         return new ListGamesHandler.ListGamesResponse(finalGameList);
+    }
+
+    public void joinGame(JoinGameHandler.JoinRequest joinRequest, String authToken) throws ResponseException, DataAccessException {
+        if (authToken == null || joinRequest.playerColor() == null || joinRequest.gameID() == 0) {
+            throw new ResponseException(400, "Error: bad request");
+        }
+        AuthData authData = authDAO.getAuth(authToken);
+        if (!matchAuth(authToken)) {
+            throw new ResponseException(401, "Error: unauthorized");
+        }
+        GameData gameData = gameDAO.getGame(joinRequest.gameID());
+        if (gameData == null) {
+            throw new ResponseException(400, "Error: bad request");
+        }
+        if (joinRequest.playerColor() == ChessGame.TeamColor.WHITE && gameData.whiteUsername() != null) {
+            throw new ResponseException(403, "Error: already taken");
+        } else if (joinRequest.playerColor() == ChessGame.TeamColor.BLACK && gameData.blackUsername() != null) {
+            throw new ResponseException(403, "Error: already taken");
+        }
+        gameDAO.updateGame(joinRequest.gameID(), joinRequest.playerColor(), authData.username());
     }
 }
