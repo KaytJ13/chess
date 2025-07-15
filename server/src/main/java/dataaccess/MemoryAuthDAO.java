@@ -39,4 +39,18 @@ public class MemoryAuthDAO implements AuthDAO {
         }
         authDB.remove(data);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        MemoryAuthDAO that = (MemoryAuthDAO) o;
+        return Objects.equals(authDB, that.authDB);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(authDB);
+    }
 }

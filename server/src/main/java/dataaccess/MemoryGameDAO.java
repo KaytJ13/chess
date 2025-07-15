@@ -4,6 +4,7 @@ import chess.ChessGame;
 import model.GameData;
 
 import java.util.HashSet;
+import java.util.Objects;
 
 public class MemoryGameDAO implements GameDAO{
     private final HashSet<GameData> gameDB;
@@ -57,5 +58,19 @@ public class MemoryGameDAO implements GameDAO{
                     currentGame.gameName(), currentGame.game());
         }
         createGame(updatedVersion);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        MemoryGameDAO that = (MemoryGameDAO) o;
+        return Objects.equals(gameDB, that.gameDB);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(gameDB);
     }
 }

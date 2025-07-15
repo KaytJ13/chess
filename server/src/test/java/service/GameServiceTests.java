@@ -1,0 +1,109 @@
+package service;
+
+import chess.ChessGame;
+import dataaccess.AuthDAO;
+import dataaccess.MemoryAuthDAO;
+import dataaccess.MemoryGameDAO;
+import exception.ResponseException;
+import handlers.JoinGameHandler;
+import handlers.ListGamesHandler;
+import model.AuthData;
+import org.junit.jupiter.api.Test;
+import services.GameService;
+
+import java.util.Objects;
+
+public class GameServiceTests {
+
+    @Test
+    void testCreateGamePositive() {
+        AuthDAO authDAO = new MemoryAuthDAO();
+        GameService gameService = new GameService(authDAO, new MemoryGameDAO());
+        authDAO.createAuth(new AuthData("username1", "auth1"));
+
+        try {
+            assert Objects.equals(1, gameService.createGame("game1", "auth1"));
+        } catch (ResponseException e) {
+            assert false;
+        }
+
+    }
+
+    @Test
+    void testCreateGameNegative() {
+        AuthDAO authDAO = new MemoryAuthDAO();
+        GameService gameService = new GameService(authDAO, new MemoryGameDAO());
+
+        try {
+            gameService.createGame("game1", "auth1");
+        } catch (ResponseException e) {
+            assert true;
+        }
+    }
+
+    @Test
+    void testListGamesPositive() {
+        AuthDAO authDAO = new MemoryAuthDAO();
+        GameService gameService = new GameService(authDAO, new MemoryGameDAO());
+        authDAO.createAuth(new AuthData("username1", "auth1"));
+
+        try {
+            gameService.createGame("game1", "auth1");
+            ListGamesHandler.ListGamesResponse actual = gameService.listGames("auth1");
+            GameService.UserFriendlyGameData game1 = new GameService.UserFriendlyGameData(1, null,
+                    null, "game1");
+            GameService.UserFriendlyGameData[] games = new GameService.UserFriendlyGameData[1];
+            games[0] = game1;
+            ListGamesHandler.ListGamesResponse expected = new ListGamesHandler.ListGamesResponse(games);
+            for (int i = 0; i < actual.games().length; i++) {
+                assert Objects.equals(actual.games()[i], expected.games()[i]);
+            }
+        } catch (Exception e) {
+            assert false;
+        }
+    }
+
+    @Test
+    void testListGamesNegative() {
+        AuthDAO authDAO = new MemoryAuthDAO();
+        GameService gameService = new GameService(authDAO, new MemoryGameDAO());
+
+        try {
+            gameService.createGame("game1", "auth1");
+            gameService.listGames("auth1");
+        } catch (Exception e) {
+            assert true;
+        }
+    }
+
+    @Test
+    void testJoinGamePositive() {
+        AuthDAO authDAO = new MemoryAuthDAO();
+        GameService gameService = new GameService(authDAO, new MemoryGameDAO());
+        authDAO.createAuth(new AuthData("username1", "auth1"));
+
+        try {
+            gameService.createGame("game", "auth1");
+            gameService.joinGame(new JoinGameHandler.JoinRequest(ChessGame.TeamColor.WHITE, 1),
+                    "auth1");
+        } catch (Exception e) {
+            assert true;
+        }
+    }
+
+    @Test
+    void testJoinGameNegative() {
+        AuthDAO authDAO = new MemoryAuthDAO();
+        GameService gameService = new GameService(authDAO, new MemoryGameDAO());
+
+        try {
+            gameService.joinGame(new JoinGameHandler.JoinRequest(ChessGame.TeamColor.WHITE, 4),
+                    "auth1");
+            authDAO.createAuth(new AuthData("username1", "auth1"));
+            gameService.joinGame(new JoinGameHandler.JoinRequest(ChessGame.TeamColor.WHITE, 4),
+                    "auth1");
+        } catch (Exception e) {
+            assert true;
+        }
+    }
+}

@@ -31,4 +31,18 @@ public class MemoryUserDAO implements UserDAO {
         }
         return null;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        MemoryUserDAO that = (MemoryUserDAO) o;
+        return Objects.equals(userDB, that.userDB);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(userDB);
+    }
 }
