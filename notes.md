@@ -1,5 +1,9 @@
 #My notes:
 -
+- Edit the db.properties to contain username and password
+- Install MYSQL system (instructions linked on specifications)
+- Program phase 4
+
 - Things to think about after talking with the TAs:
   - Potentially change the whole structure. Instead of a board being an array of arrays of positions:
     - The ChessBoard would have 2 arrays: white pieces and black pieces
