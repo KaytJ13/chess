@@ -9,9 +9,9 @@ public interface GameDAO {
 
     void clear() throws ResponseException;
 
-    GameData getGame(int gameID);
+    GameData getGame(int gameID) throws DataAccessException;
 
-    void createGame(GameData data);
+    void createGame(GameData data) throws ResponseException;
 
     GameData[] listGames();
 

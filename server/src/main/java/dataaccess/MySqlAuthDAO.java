@@ -21,9 +21,10 @@ public class MySqlAuthDAO implements AuthDAO {
     private final String[] createStatements = {
             """
             CREATE TABLE IF NOT EXISTS  authData (
-              username varchar(255) NOT NULL,
-              authToken varchar(255) NOT NULL,
-              PRIMARY KEY (username)
+              idNum INT NOT NULL AUTO_INCREMENT,
+              username VARCHAR(255) NOT NULL,
+              authToken VARCHAR(255) NOT NULL,
+              PRIMARY KEY (idNum)
             );
             """
 };
@@ -71,8 +72,8 @@ public class MySqlAuthDAO implements AuthDAO {
     @Override
     public void deleteAuth(AuthData data) throws ResponseException {
         //removes an auth
-        var statement = "DELETE FROM authData WHERE username=?";
-        executeUpdate(statement, data.username());
+        var statement = "DELETE FROM authData WHERE authToken=?";
+        executeUpdate(statement, data.authToken());
     }
 
     @Override
