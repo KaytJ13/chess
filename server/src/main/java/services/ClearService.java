@@ -3,6 +3,7 @@ package services;
 import dataaccess.UserDAO;
 import dataaccess.AuthDAO;
 import dataaccess.GameDAO;
+import exception.ResponseException;
 
 import java.util.Objects;
 
@@ -18,7 +19,7 @@ public class ClearService {
         this.gameDAO = gameDAO;
     }
 
-    public void clear() {
+    public void clear() throws ResponseException {
         userDAO.clear();
         authDAO.clear();
         gameDAO.clear();

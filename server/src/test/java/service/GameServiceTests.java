@@ -2,6 +2,7 @@ package service;
 
 import chess.ChessGame;
 import dataaccess.AuthDAO;
+import dataaccess.DataAccessException;
 import dataaccess.MemoryAuthDAO;
 import dataaccess.MemoryGameDAO;
 import exception.ResponseException;
@@ -16,14 +17,14 @@ import java.util.Objects;
 public class GameServiceTests {
 
     @Test
-    void testCreateGamePositive() {
+    void testCreateGamePositive() throws ResponseException {
         AuthDAO authDAO = new MemoryAuthDAO();
         GameService gameService = new GameService(authDAO, new MemoryGameDAO());
         authDAO.createAuth(new AuthData("username1", "auth1"));
 
         try {
             assert Objects.equals(1, gameService.createGame("game1", "auth1"));
-        } catch (ResponseException e) {
+        } catch (ResponseException | DataAccessException e) {
             assert false;
         }
 
@@ -38,11 +39,13 @@ public class GameServiceTests {
             gameService.createGame("game1", "auth1");
         } catch (ResponseException e) {
             assert true;
+        } catch (DataAccessException e) {
+            assert false;
         }
     }
 
     @Test
-    void testListGamesPositive() {
+    void testListGamesPositive() throws ResponseException {
         AuthDAO authDAO = new MemoryAuthDAO();
         GameService gameService = new GameService(authDAO, new MemoryGameDAO());
         authDAO.createAuth(new AuthData("username1", "auth1"));
@@ -77,7 +80,7 @@ public class GameServiceTests {
     }
 
     @Test
-    void testJoinGamePositive() {
+    void testJoinGamePositive() throws ResponseException {
         AuthDAO authDAO = new MemoryAuthDAO();
         GameService gameService = new GameService(authDAO, new MemoryGameDAO());
         authDAO.createAuth(new AuthData("username1", "auth1"));

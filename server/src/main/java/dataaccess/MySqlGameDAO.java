@@ -17,11 +17,13 @@ public class MySqlGameDAO implements GameDAO {
     @Override
     public GameData getGame(int gameID) {
         //return a game
+        return null;
     }
 
     @Override
     public GameData[] listGames() {
         //list games
+        return null;
     }
 
     @Override

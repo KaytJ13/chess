@@ -22,7 +22,7 @@ public class GameService {
         this.gameDAO = gameDAO;
     }
 
-    private Boolean matchAuth(String authToken) {
+    private Boolean matchAuth(String authToken) throws DataAccessException {
         AuthData authData = authDAO.getAuth(authToken);
         if (authData == null) {
             return false;
@@ -31,7 +31,7 @@ public class GameService {
         }
     }
 
-    public int createGame(String gameName, String authToken) throws ResponseException {
+    public int createGame(String gameName, String authToken) throws ResponseException, DataAccessException {
         if (gameName == null || authToken == null) {
             throw new ResponseException(400, "Error: bad request");
         }
@@ -49,7 +49,8 @@ public class GameService {
 
     public record UserFriendlyGameData(int gameID, String whiteUsername, String blackUsername, String gameName) {}
 
-    public ListGamesHandler.ListGamesResponse listGames(String authToken) throws ResponseException {
+    public ListGamesHandler.ListGamesResponse listGames(String authToken)
+            throws ResponseException, DataAccessException {
         if (authToken == null) {
             throw new ResponseException(400, "Error: bad request");
         }
@@ -67,7 +68,8 @@ public class GameService {
         return new ListGamesHandler.ListGamesResponse(finalGameList);
     }
 
-    public void joinGame(JoinGameHandler.JoinRequest joinRequest, String authToken) throws ResponseException, DataAccessException {
+    public void joinGame(JoinGameHandler.JoinRequest joinRequest, String authToken)
+            throws ResponseException, DataAccessException {
         if (authToken == null || joinRequest.playerColor() == null || joinRequest.gameID() == 0) {
             throw new ResponseException(400, "Error: bad request");
         }

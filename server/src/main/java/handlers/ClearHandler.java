@@ -1,5 +1,6 @@
 package handlers;
 
+import exception.ResponseException;
 import services.ClearService;
 
 public class ClearHandler {
@@ -9,8 +10,7 @@ public class ClearHandler {
         this.clearService = clearService;
     }
 
-    //Need to update so it returns a { } Json? Or do I?
-    public void clear() {
+    public void clear() throws ResponseException {
         clearService.clear();
     }
 }

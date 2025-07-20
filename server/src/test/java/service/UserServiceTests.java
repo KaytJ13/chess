@@ -1,9 +1,6 @@
 package service;
 
-import dataaccess.AuthDAO;
-import dataaccess.MemoryAuthDAO;
-import dataaccess.MemoryUserDAO;
-import dataaccess.UserDAO;
+import dataaccess.*;
 import exception.ResponseException;
 import handlers.LoginHandler;
 import handlers.RegisterHandler;
@@ -84,6 +81,7 @@ public class UserServiceTests {
     void logoutPositive() {
         UserDAO userDAO = new MemoryUserDAO();
         AuthDAO authDAO = new MemoryAuthDAO();
+
         UserService userService = new UserService(userDAO, authDAO);
 
         try {

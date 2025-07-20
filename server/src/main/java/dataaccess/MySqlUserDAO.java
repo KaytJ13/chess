@@ -16,6 +16,7 @@ public class MySqlUserDAO implements UserDAO {
     @Override
     public UserData getUser(String username) {
         //gets user
+        return null;
     }
 
     @Override

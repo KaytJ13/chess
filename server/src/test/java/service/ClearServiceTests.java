@@ -2,6 +2,7 @@ package service;
 
 import chess.ChessGame;
 import dataaccess.*;
+import exception.ResponseException;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
@@ -11,7 +12,7 @@ import services.ClearService;
 public class ClearServiceTests {
 
     @Test
-    void testClear() {
+    void testClear() throws ResponseException {
         UserDAO userDAO = new MemoryUserDAO();
         AuthDAO authDAO = new MemoryAuthDAO();
         GameDAO gameDAO = new MemoryGameDAO();

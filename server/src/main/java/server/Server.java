@@ -59,7 +59,11 @@ public class Server {
     }
 
     private Object clear(Request req, Response res) {
-        clearHandler.clear();
+        try {
+            clearHandler.clear();
+        } catch (ResponseException e) {
+            return exceptionHandler(e, res);
+        }
         res.status(200);
         return "";
     }
@@ -109,6 +113,8 @@ public class Server {
             gameResponse = createGameHandler.createGame(req.body(), req.headers("authorization"));
         } catch (ResponseException e) {
             return exceptionHandler(e, res);
+        } catch (DataAccessException e) {
+            return exceptionHandler(new ResponseException(500, "Error: " + e.getMessage()), res);
         }
         res.status(200);
         return gameResponse;
@@ -120,6 +126,8 @@ public class Server {
             gameList = listGamesHandler.listGames(req.headers("authorization"));
         } catch (ResponseException e) {
             return exceptionHandler(e, res);
+        } catch (DataAccessException e) {
+            return exceptionHandler(new ResponseException(500, "Error: " + e.getMessage()), res);
         }
         res.status();
         return gameList;
