@@ -79,6 +79,8 @@ public class Server {
             authResult = registerHandler.register(req.body());
         } catch (ResponseException e) {
             return exceptionHandler(e, res);
+        } catch (DataAccessException e) {
+            return exceptionHandler(new ResponseException(500, "Error: " + e.getMessage()), res);
         }
         res.status(200);
         return authResult;
@@ -90,6 +92,8 @@ public class Server {
             authResult = loginHandler.login(req.body());
         } catch (ResponseException e) {
             return exceptionHandler(e, res);
+        } catch (DataAccessException e) {
+            return exceptionHandler(new ResponseException(500, "Error: " + e.getMessage()), res);
         }
         res.status(200);
         return authResult;

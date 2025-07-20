@@ -1,6 +1,7 @@
 package handlers;
 
 import com.google.gson.Gson;
+import dataaccess.DataAccessException;
 import exception.ResponseException;
 import model.AuthData;
 import services.UserService;
@@ -14,7 +15,7 @@ public class LoginHandler {
 
     public record LoginRequest(String username, String password) {}
 
-    public String login(String jsonBody) throws ResponseException {
+    public String login(String jsonBody) throws ResponseException, DataAccessException {
         LoginRequest request = new Gson().fromJson(jsonBody, LoginRequest.class);
         AuthData response = userService.login(request);
         return new Gson().toJson(response);

@@ -24,7 +24,7 @@ public class UserServiceTests {
             UserDAO userDAO2 = new MemoryUserDAO();
             userDAO2.createUser(new UserData("username1", "password", "email"));
             assert Objects.equals(userDAO2, userDAO);
-        } catch (ResponseException e) {
+        } catch (ResponseException | DataAccessException e) {
             assert false;
         }
     }
@@ -39,6 +39,8 @@ public class UserServiceTests {
                     "email"));
         } catch (ResponseException e) {
             assert true;
+        } catch (DataAccessException e) {
+            assert false;
         }
     }
 
@@ -56,7 +58,7 @@ public class UserServiceTests {
                     "password"));
 
             assert Objects.nonNull(authData);
-        } catch (ResponseException e) {
+        } catch (ResponseException | DataAccessException e) {
             assert false;
         }
     }
@@ -74,6 +76,8 @@ public class UserServiceTests {
             userService.login(new LoginHandler.LoginRequest("username1", "pass"));
         } catch (ResponseException e) {
             assert true;
+        } catch (DataAccessException e) {
+            assert false;
         }
     }
 
