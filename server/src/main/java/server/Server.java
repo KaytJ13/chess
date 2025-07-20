@@ -16,8 +16,8 @@ public class Server {
     private final RegisterHandler registerHandler;
 
     public Server() {
-        UserDAO userDAO = new MemoryUserDAO();
-        AuthDAO authDAO = new MemoryAuthDAO();
+        UserDAO userDAO = new MySqlUserDAO();
+        AuthDAO authDAO = new MySqlAuthDAO();
         GameDAO gameDAO = new MemoryGameDAO();
 
         GameService gameService = new GameService(authDAO, gameDAO);

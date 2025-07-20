@@ -9,22 +9,25 @@ import static java.sql.Types.NULL;
 
 public class MySqlAuthDAO implements AuthDAO {
 
-    public MySqlAuthDAO () throws ResponseException, DataAccessException {
+    public MySqlAuthDAO () {
         //constructor
-        configureDatabase();
+        try {
+            configureDatabase();
+        } catch (ResponseException | DataAccessException e) {
+            int i = 0;
+        }
     }
 
     private final String[] createStatements = {
             """
             CREATE TABLE IF NOT EXISTS  authData (
-              `username` varchar(255) NOT NULL,
-              `authToken` varchar(255) NOT NULL,
-              PRIMARY KEY (`username`),
+              username varchar(255) NOT NULL,
+              authToken varchar(255) NOT NULL,
+              PRIMARY KEY (username),
             );
             """
 //            `json` TEXT DEFAULT NULL, <== This line was after authToken, but I don't think I need a json here
 };
-
 
     private void configureDatabase() throws ResponseException, DataAccessException {
         DatabaseManager.createDatabase();
@@ -48,7 +51,8 @@ public class MySqlAuthDAO implements AuthDAO {
                 ps.setString(1, authToken);
                 try (var rs = ps.executeQuery()) {
                     if (rs.next()) {
-                        return new AuthData(rs.getString("username"), rs.getString("authToken"));
+                        return new AuthData(rs.getString("username"),
+                                rs.getString("authToken"));
                     }
                 }
             }
@@ -91,7 +95,8 @@ public class MySqlAuthDAO implements AuthDAO {
 
             }
         } catch (SQLException | DataAccessException e) {
-            throw new ResponseException(500, String.format("unable to update database: %s, %s", statement, e.getMessage()));
+            throw new ResponseException(500,
+                    String.format("unable to update database: %s, %s", statement, e.getMessage()));
         }
     }
 }
