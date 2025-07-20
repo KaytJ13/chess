@@ -1,12 +1,13 @@
 package dataaccess;
 
 import chess.ChessGame;
+import exception.ResponseException;
 import model.GameData;
 
 public interface GameDAO {
     //Create, read, update, delete
 
-    void clear();
+    void clear() throws ResponseException;
 
     GameData getGame(int gameID);
 

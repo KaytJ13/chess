@@ -25,7 +25,7 @@ public class MySqlUserDAO implements UserDAO {
               username varchar(255) NOT NULL,
               password varchar(255) NOT NULL,
               email varchar(255) NOT NULL,
-              PRIMARY KEY (username),
+              PRIMARY KEY (username)
             );
             """
     };
@@ -54,7 +54,7 @@ public class MySqlUserDAO implements UserDAO {
     public UserData getUser(String username) throws DataAccessException {
         //gets user
         try (var conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT FROM userData WHERE username=?";
+            var statement = "SELECT username, password, email FROM userData WHERE username=?";
             try (var ps = conn.prepareStatement(statement)) {
                 ps.setString(1, username);
                 try (var rs = ps.executeQuery()) {
@@ -73,7 +73,7 @@ public class MySqlUserDAO implements UserDAO {
     @Override
     public void createUser(UserData userData) throws ResponseException {
         //inserts user
-        var statement = "INSERT INTO authData (username, password, email) VALUES (?, ?, ?)";
+        var statement = "INSERT INTO userData (username, password, email) VALUES (?, ?, ?)";
         executeUpdate(statement, userData.username(), userData.password(), userData.email());
     }
 

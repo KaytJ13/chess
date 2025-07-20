@@ -23,10 +23,9 @@ public class MySqlAuthDAO implements AuthDAO {
             CREATE TABLE IF NOT EXISTS  authData (
               username varchar(255) NOT NULL,
               authToken varchar(255) NOT NULL,
-              PRIMARY KEY (username),
+              PRIMARY KEY (username)
             );
             """
-//            `json` TEXT DEFAULT NULL, <== This line was after authToken, but I don't think I need a json here
 };
 
     private void configureDatabase() throws ResponseException, DataAccessException {
@@ -46,7 +45,7 @@ public class MySqlAuthDAO implements AuthDAO {
     public AuthData getAuth(String authToken) throws DataAccessException {
         //gets auth
         try (var conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT FROM authData WHERE authToken=?";
+            var statement = "SELECT username, authToken FROM authData WHERE authToken=?";
             try (var ps = conn.prepareStatement(statement)) {
                 ps.setString(1, authToken);
                 try (var rs = ps.executeQuery()) {
