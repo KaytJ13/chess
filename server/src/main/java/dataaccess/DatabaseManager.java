@@ -1,7 +1,12 @@
 package dataaccess;
 
+import exception.ResponseException;
+
 import java.sql.*;
 import java.util.Properties;
+
+import static java.sql.Statement.RETURN_GENERATED_KEYS;
+import static java.sql.Types.NULL;
 
 public class DatabaseManager {
     private static String databaseName;
@@ -25,7 +30,7 @@ public class DatabaseManager {
              var preparedStatement = conn.prepareStatement(statement)) {
             preparedStatement.executeUpdate();
         } catch (SQLException ex) {
-            throw new DataAccessException("failed to create database", ex);
+            throw new DataAccessException("Error: failed to create database", ex);
         }
     }
 
@@ -48,20 +53,20 @@ public class DatabaseManager {
             conn.setCatalog(databaseName);
             return conn;
         } catch (SQLException ex) {
-            throw new DataAccessException("failed to get connection", ex);
+            throw new DataAccessException("Error: Failed to get connection", ex);
         }
     }
 
     private static void loadPropertiesFromResources() {
         try (var propStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("db.properties")) {
             if (propStream == null) {
-                throw new Exception("Unable to load db.properties");
+                throw new Exception("Error: Unable to load db.properties");
             }
             Properties props = new Properties();
             props.load(propStream);
             loadProperties(props);
         } catch (Exception ex) {
-            throw new RuntimeException("unable to process db.properties", ex);
+            throw new RuntimeException("Error: Unable to process db.properties", ex);
         }
     }
 
@@ -73,5 +78,37 @@ public class DatabaseManager {
         var host = props.getProperty("db.host");
         var port = Integer.parseInt(props.getProperty("db.port"));
         connectionUrl = String.format("jdbc:mysql://%s:%d", host, port);
+    }
+
+    static void executeUpdate(String statement, Object... params) throws ResponseException {
+        try (var conn = DatabaseManager.getConnection()) {
+            try (var ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
+                for (var i = 0; i < params.length; i++) {
+                    var param = params[i];
+                    // Don't make this a switch statement. It BREAKS and I have no idea why
+                    if (param instanceof String p) ps.setString(i + 1, p);
+                    else if (param instanceof Integer p) ps.setInt(i + 1, p);
+                    else if (param == null) ps.setNull(i + 1, NULL);
+                }
+                ps.executeUpdate();
+
+            }
+        } catch (SQLException | DataAccessException e) {
+            throw new ResponseException(500,
+                    String.format("Error: Unable to update database: %s, %s", statement, e.getMessage()));
+        }
+    }
+
+    static void configureDatabaseHelper(String[] createStatements) throws DataAccessException, ResponseException {
+        DatabaseManager.createDatabase();
+        try (var conn = DatabaseManager.getConnection()) {
+            for (var statement : createStatements) {
+                try (var preparedStatement = conn.prepareStatement(statement)) {
+                    preparedStatement.executeUpdate();
+                }
+            }
+        } catch (SQLException ex) {
+            throw new ResponseException(500, String.format("Error: Unable to configure database: %s", ex.getMessage()));
+        }
     }
 }

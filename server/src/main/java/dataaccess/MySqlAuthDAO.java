@@ -4,8 +4,6 @@ import exception.ResponseException;
 import model.AuthData;
 import java.sql.*;
 
-import static java.sql.Statement.RETURN_GENERATED_KEYS;
-import static java.sql.Types.NULL;
 
 public class MySqlAuthDAO implements AuthDAO {
 
@@ -30,16 +28,7 @@ public class MySqlAuthDAO implements AuthDAO {
 };
 
     private void configureDatabase() throws ResponseException, DataAccessException {
-        DatabaseManager.createDatabase();
-        try (var conn = DatabaseManager.getConnection()) {
-            for (var statement : createStatements) {
-                try (var preparedStatement = conn.prepareStatement(statement)) {
-                    preparedStatement.executeUpdate();
-                }
-            }
-        } catch (SQLException ex) {
-            throw new ResponseException(500, String.format("Unable to configure database: %s", ex.getMessage()));
-        }
+        DatabaseManager.configureDatabaseHelper(createStatements);
     }
 
     @Override
@@ -57,7 +46,7 @@ public class MySqlAuthDAO implements AuthDAO {
                 }
             }
         } catch (Exception e) {
-            throw new DataAccessException(String.format("Unable to read data: %s", e.getMessage()));
+            throw new DataAccessException(String.format("Error: Unable to read data: %s", e.getMessage()));
         }
         return null;
     }
@@ -66,37 +55,20 @@ public class MySqlAuthDAO implements AuthDAO {
     public void createAuth(AuthData data) throws ResponseException {
         //inserts an auth
         var statement = "INSERT INTO authData (username, authToken) VALUES (?, ?)";
-        executeUpdate(statement, data.username(), data.authToken());
+        DatabaseManager.executeUpdate(statement, data.username(), data.authToken());
     }
 
     @Override
     public void deleteAuth(AuthData data) throws ResponseException {
         //removes an auth
         var statement = "DELETE FROM authData WHERE authToken=?";
-        executeUpdate(statement, data.authToken());
+        DatabaseManager.executeUpdate(statement, data.authToken());
     }
 
     @Override
     public void clear() throws ResponseException {
-        //clears authdata from database
+        //clears auth data from database
         var statement = "TRUNCATE authData";
-        executeUpdate(statement);
-    }
-
-    private void executeUpdate(String statement, Object... params) throws ResponseException {
-        try (var conn = DatabaseManager.getConnection()) {
-            try (var ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
-                for (var i = 0; i < params.length; i++) {
-                    var param = params[i];
-                    if (param instanceof String p) ps.setString(i + 1, p);
-                    else if (param == null) ps.setNull(i + 1, NULL);
-                }
-                ps.executeUpdate();
-
-            }
-        } catch (SQLException | DataAccessException e) {
-            throw new ResponseException(500,
-                    String.format("unable to update database: %s, %s", statement, e.getMessage()));
-        }
+        DatabaseManager.executeUpdate(statement);
     }
 }

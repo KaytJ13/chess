@@ -5,11 +5,8 @@ import com.google.gson.Gson;
 import exception.ResponseException;
 import model.GameData;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 
-import static java.sql.Statement.RETURN_GENERATED_KEYS;
-import static java.sql.Types.NULL;
 
 public class MySqlGameDAO implements GameDAO {
 
@@ -36,23 +33,14 @@ public class MySqlGameDAO implements GameDAO {
     };
 
     private void configureDatabase() throws ResponseException, DataAccessException {
-        DatabaseManager.createDatabase();
-        try (var conn = DatabaseManager.getConnection()) {
-            for (var statement : createStatements) {
-                try (var preparedStatement = conn.prepareStatement(statement)) {
-                    preparedStatement.executeUpdate();
-                }
-            }
-        } catch (SQLException ex) {
-            throw new ResponseException(500, String.format("Unable to configure database: %s", ex.getMessage()));
-        }
+        DatabaseManager.configureDatabaseHelper(createStatements);
     }
 
     @Override
     public void clear() throws ResponseException {
         //clear game data
         var statement = "TRUNCATE gameData";
-        executeUpdate(statement);
+        DatabaseManager.executeUpdate(statement);
     }
 
     @Override
@@ -73,7 +61,7 @@ public class MySqlGameDAO implements GameDAO {
                 }
             }
         } catch (Exception e) {
-            throw new DataAccessException(String.format("Unable to read data: %s", e.getMessage()));
+            throw new DataAccessException(String.format("Error: Unable to read data: %s", e.getMessage()));
         }
         return null;
     }
@@ -90,12 +78,12 @@ public class MySqlGameDAO implements GameDAO {
                         result.add(new GameData(rs.getInt("gameID"),
                                 rs.getString("whiteUsername"), rs.getString("blackUsername"),
                                 rs.getString("gameName"),
-                                new Gson().fromJson(rs.getString("game"), ChessGame.class)));
+                                new Gson().fromJson(rs.getString("jsonGame"), ChessGame.class)));
                     }
                 }
             }
         } catch (Exception e) {
-            throw new ResponseException(500, String.format("Unable to read data: %s", e.getMessage()));
+            throw new ResponseException(500, String.format("Error: Unable to read data: %s", e.getMessage()));
         }
         GameData[] gamesList = new GameData[result.size()];
         for (GameData game : result) {
@@ -109,12 +97,13 @@ public class MySqlGameDAO implements GameDAO {
         //insert a game
         var statement =
                 "INSERT INTO gameData (gameID, whiteUsername, blackUsername, gameName, jsonGame) VALUES (?, ?, ?, ?, ?)";
-        executeUpdate(statement, data.gameID(), data.whiteUsername(), data.blackUsername(), data.gameName(),
-                new Gson().toJson(data.game()));
+        DatabaseManager.executeUpdate(statement, data.gameID(), data.whiteUsername(), data.blackUsername(),
+                data.gameName(), new Gson().toJson(data.game()));
     }
 
     @Override
-    public void updateGame(int gameID, ChessGame.TeamColor playerColor, String username) throws DataAccessException, ResponseException {
+    public void updateGame(int gameID, ChessGame.TeamColor playerColor, String username) throws DataAccessException,
+            ResponseException {
         //update a game
         String statement;
         if (playerColor == ChessGame.TeamColor.WHITE) {
@@ -122,26 +111,7 @@ public class MySqlGameDAO implements GameDAO {
         } else {
             statement = "UPDATE gameData SET blackUsername = ? WHERE gameID = ?";
         }
-        executeUpdate(statement, username, gameID);
+        DatabaseManager.executeUpdate(statement, username, gameID);
 
-    }
-
-    private void executeUpdate(String statement, Object... params) throws ResponseException {
-        try (var conn = DatabaseManager.getConnection()) {
-            try (var ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
-                for (var i = 0; i < params.length; i++) {
-                    var param = params[i];
-                    // Don't make this a switch statement. It BREAKS and I have no idea why
-                    if (param instanceof String p) ps.setString(i + 1, p);
-                    else if (param instanceof Integer p) ps.setInt(i + 1, p);
-                    else if (param == null) ps.setNull(i + 1, NULL);
-                }
-                ps.executeUpdate();
-
-            }
-        } catch (SQLException | DataAccessException e) {
-            throw new ResponseException(500,
-                    String.format("unable to update database: %s, %s", statement, e.getMessage()));
-        }
     }
 }

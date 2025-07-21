@@ -4,10 +4,6 @@ import exception.ResponseException;
 import model.UserData;
 import org.mindrot.jbcrypt.BCrypt;
 
-import java.sql.SQLException;
-
-import static java.sql.Statement.RETURN_GENERATED_KEYS;
-import static java.sql.Types.NULL;
 
 public class MySqlUserDAO implements UserDAO {
 
@@ -32,23 +28,14 @@ public class MySqlUserDAO implements UserDAO {
     };
 
     private void configureDatabase() throws ResponseException, DataAccessException {
-        DatabaseManager.createDatabase();
-        try (var conn = DatabaseManager.getConnection()) {
-            for (var statement : createStatements) {
-                try (var preparedStatement = conn.prepareStatement(statement)) {
-                    preparedStatement.executeUpdate();
-                }
-            }
-        } catch (SQLException ex) {
-            throw new ResponseException(500, String.format("Unable to configure database: %s", ex.getMessage()));
-        }
+        DatabaseManager.configureDatabaseHelper(createStatements);
     }
 
     @Override
     public void clear() throws ResponseException {
         //clears user data
         var statement = "TRUNCATE userData";
-        executeUpdate(statement);
+        DatabaseManager.executeUpdate(statement);
     }
 
     @Override
@@ -66,7 +53,7 @@ public class MySqlUserDAO implements UserDAO {
                 }
             }
         } catch (Exception e) {
-            throw new DataAccessException(String.format("Unable to read data: %s", e.getMessage()));
+            throw new DataAccessException(String.format("Error: Unable to read data: %s", e.getMessage()));
         }
         return null;
     }
@@ -76,23 +63,6 @@ public class MySqlUserDAO implements UserDAO {
         //inserts user
         var statement = "INSERT INTO userData (username, password, email) VALUES (?, ?, ?)";
         String hashedPassword = BCrypt.hashpw(userData.password(), BCrypt.gensalt());
-        executeUpdate(statement, userData.username(), hashedPassword, userData.email());
-    }
-
-    private void executeUpdate(String statement, Object... params) throws ResponseException {
-        try (var conn = DatabaseManager.getConnection()) {
-            try (var ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
-                for (var i = 0; i < params.length; i++) {
-                    var param = params[i];
-                    if (param instanceof String p) ps.setString(i + 1, p);
-                    else if (param == null) ps.setNull(i + 1, NULL);
-                }
-                ps.executeUpdate();
-
-            }
-        } catch (SQLException | DataAccessException e) {
-            throw new ResponseException(500,
-                    String.format("unable to update database: %s, %s", statement, e.getMessage()));
-        }
+        DatabaseManager.executeUpdate(statement, userData.username(), hashedPassword, userData.email());
     }
 }
