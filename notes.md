@@ -1,6 +1,7 @@
 #My notes:
 -
 - Program MySqlGameDAO
+- PASSWORD HASHING!! DO THIS!!!
 
 - Things to think about after talking with the TAs:
   - Potentially change the whole structure. Instead of a board being an array of arrays of positions:

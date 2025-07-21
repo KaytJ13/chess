@@ -8,6 +8,7 @@ import handlers.LoginHandler.LoginRequest;
 import handlers.RegisterHandler.RegisterRequest;
 import model.AuthData;
 import model.UserData;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -47,7 +48,7 @@ public class UserService {
             throw new ResponseException(400, "Error: bad request");
         }
         UserData userData = userDAO.getUser(loginRequest.username());
-        if (userData == null || !Objects.equals(userData.password(), loginRequest.password())) {
+        if (userData == null || !BCrypt.checkpw(loginRequest.password(), userData.password())) {
             throw new ResponseException(401, "Error: unauthorized");
         }
         AuthData auth = new AuthData(loginRequest.username(), generateToken());

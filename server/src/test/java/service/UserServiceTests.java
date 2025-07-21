@@ -23,7 +23,10 @@ public class UserServiceTests {
                     "email"));
             UserDAO userDAO2 = new MemoryUserDAO();
             userDAO2.createUser(new UserData("username1", "password", "email"));
-            assert Objects.equals(userDAO2, userDAO);
+            UserData userData1 = userDAO.getUser("username1");
+            UserData userData2 = userDAO2.getUser("username1");
+            assert Objects.equals(userData1.username(), userData2.username()) &&
+                    Objects.equals(userData1.email(), userData2.email());
         } catch (ResponseException | DataAccessException e) {
             assert false;
         }
