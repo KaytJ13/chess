@@ -10,7 +10,7 @@ public class MySqlAuthDAOTests {
     private final AuthDAO authDAO = new MySqlAuthDAO();
 
     @BeforeEach
-    void startAuthDAO() {
+    void cleanUp() {
         try {
             authDAO.clear();
         } catch (Exception e) {

@@ -108,8 +108,10 @@ public class MySqlGameDAO implements GameDAO {
         String statement;
         if (playerColor == ChessGame.TeamColor.WHITE) {
             statement = "UPDATE gameData SET whiteUsername = ? WHERE gameID = ?";
-        } else {
+        } else if (playerColor == ChessGame.TeamColor.BLACK){
             statement = "UPDATE gameData SET blackUsername = ? WHERE gameID = ?";
+        } else {
+            throw new ResponseException(400, "Error: bad request");
         }
         DatabaseManager.executeUpdate(statement, username, gameID);
 
