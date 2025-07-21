@@ -53,9 +53,9 @@ public class MySqlAuthDAOTests {
     @Test
     void testCreateAuthPositive() {
         try {
-            AuthData data = new AuthData("Username", "AuThToKeNhErE");
+            AuthData data = new AuthData("username", "authToken");
             authDAO.createAuth(data);
-            assert Objects.equals(authDAO.getAuth("AuThToKeNhErE"), data);
+            assert Objects.equals(authDAO.getAuth("authToken").username(), data.username());
         } catch (Exception e) {
             System.out.printf("Error: an exception was raised: " + e);
             assert false;

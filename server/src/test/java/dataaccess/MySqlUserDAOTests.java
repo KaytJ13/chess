@@ -54,10 +54,10 @@ public class MySqlUserDAOTests {
     @Test
     void testCreateUserPositive() {
         try {
-            UserData user = new UserData("username", "password", "email");
+            UserData user = new UserData("Username", "Password", "email@email.net");
             userDAO.createUser(user);
-            assert Objects.equals(userDAO.getUser("username").username(), user.username()) &&
-                    Objects.equals(userDAO.getUser("username").email(), user.email());
+            assert Objects.equals(userDAO.getUser("Username").username(), user.username()) &&
+                    Objects.equals(userDAO.getUser("Username").email(), user.email());
         } catch (Exception e) {
             assert false;
         }
