@@ -13,8 +13,8 @@ public interface GameDAO {
 
     void createGame(GameData data) throws ResponseException;
 
-    GameData[] listGames();
+    GameData[] listGames() throws ResponseException;
 
-    void updateGame (int gameID, ChessGame.TeamColor playerColor, String username) throws DataAccessException;
+    void updateGame (int gameID, ChessGame.TeamColor playerColor, String username) throws DataAccessException, ResponseException;
 
 }

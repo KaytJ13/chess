@@ -6,6 +6,7 @@ import exception.ResponseException;
 import model.GameData;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
 import static java.sql.Types.NULL;
@@ -59,7 +60,7 @@ public class MySqlGameDAO implements GameDAO {
         //return a game
         try (var conn = DatabaseManager.getConnection()) {
             var statement =
-                    "SELECT gameID, whiteUsername, blackUsername, gameName, jsonGame FROM userData WHERE gameID=?";
+                    "SELECT gameID, whiteUsername, blackUsername, gameName, jsonGame FROM gameData WHERE gameID=?";
             try (var ps = conn.prepareStatement(statement)) {
                 ps.setInt(1, gameID);
                 try (var rs = ps.executeQuery()) {
@@ -78,9 +79,29 @@ public class MySqlGameDAO implements GameDAO {
     }
 
     @Override
-    public GameData[] listGames() {
+    public GameData[] listGames() throws ResponseException {
         //list games
-        return null;
+        var result = new ArrayList<GameData>();
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT gameID, whiteUsername, blackUsername, gameName, jsonGame FROM gameData";
+            try (var ps = conn.prepareStatement(statement)) {
+                try (var rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        result.add(new GameData(rs.getInt("gameID"),
+                                rs.getString("whiteUsername"), rs.getString("blackUsername"),
+                                rs.getString("gameName"),
+                                new Gson().fromJson(rs.getString("game"), ChessGame.class)));
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new ResponseException(500, String.format("Unable to read data: %s", e.getMessage()));
+        }
+        GameData[] gamesList = new GameData[result.size()];
+        for (GameData game : result) {
+            gamesList[game.gameID()-1] = game;
+        }
+        return gamesList;
     }
 
     @Override
@@ -93,8 +114,16 @@ public class MySqlGameDAO implements GameDAO {
     }
 
     @Override
-    public void updateGame(int gameID, ChessGame.TeamColor playerColor, String username) throws DataAccessException {
+    public void updateGame(int gameID, ChessGame.TeamColor playerColor, String username) throws DataAccessException, ResponseException {
         //update a game
+        String statement;
+        if (playerColor == ChessGame.TeamColor.WHITE) {
+            statement = "UPDATE gameData SET whiteUsername = ? WHERE gameID = ?";
+        } else {
+            statement = "UPDATE gameData SET blackUsername = ? WHERE gameID = ?";
+        }
+        executeUpdate(statement, username, gameID);
+
     }
 
     private void executeUpdate(String statement, Object... params) throws ResponseException {
@@ -102,7 +131,9 @@ public class MySqlGameDAO implements GameDAO {
             try (var ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
                 for (var i = 0; i < params.length; i++) {
                     var param = params[i];
+                    // Don't make this a switch statement. It BREAKS and I have no idea why
                     if (param instanceof String p) ps.setString(i + 1, p);
+                    else if (param instanceof Integer p) ps.setInt(i + 1, p);
                     else if (param == null) ps.setNull(i + 1, NULL);
                 }
                 ps.executeUpdate();
