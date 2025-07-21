@@ -1,10 +1,8 @@
 #My notes:
 -
-- Program MySqlGameDAO
-- PASSWORD HASHING!! DO THIS!!!
 
 - Things to think about after talking with the TAs:
-  - Potentially change the whole structure. Instead of a board being an array of arrays of positions:
+  - Potentially change the whole structure for Phases 0 & 1. Instead of a board being an array of arrays of positions:
     - The ChessBoard would have 2 arrays: white pieces and black pieces
     - Each piece would have a position variable
     - Position would no longer keep track of what piece is there

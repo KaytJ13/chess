@@ -14,7 +14,7 @@ public class MySqlAuthDAOTests {
         try {
             authDAO.clear();
         } catch (Exception e) {
-            return ;
+            System.out.print("Error: cleanUp failed");
         }
     }
 
