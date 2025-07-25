@@ -3,7 +3,9 @@ package server;
 import com.google.gson.Gson;
 import exception.ResponseException;
 import model.AuthData;
+import requests.JoinRequest;
 import requests.LoginRequest;
+import requests.RegisterRequest;
 
 import java.io.*;
 import java.net.*;
@@ -31,10 +33,24 @@ public class ServerFacade {
     }
 
     // register user - returns AuthData
+    public AuthData register(RegisterRequest request) throws ResponseException {
+        var path = "/user";
+        return makeRequest("POST", path, request, AuthData.class);
+    }
+
     // create game - returns game ID
     // list games - returns ListGamesResponse
     // join game
+    public void joinGame(JoinRequest request) throws ResponseException {
+        var path = "/game";
+        makeRequest("PUT", path, request, null);
+    }
+
     // clear
+    public void clear() throws ResponseException {
+        var path = "/db";
+        makeRequest("DELETE", path, null, null);
+    }
 
     private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass)
             throws ResponseException {
