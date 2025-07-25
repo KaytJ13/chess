@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import dataaccess.DataAccessException;
 import exception.ResponseException;
 import model.AuthData;
+import requests.LoginRequest;
 import services.UserService;
 
 public class LoginHandler {
@@ -12,8 +13,6 @@ public class LoginHandler {
     public LoginHandler(UserService userService) {
         this.userService = userService;
     }
-
-    public record LoginRequest(String username, String password) {}
 
     public String login(String jsonBody) throws ResponseException, DataAccessException {
         LoginRequest request = new Gson().fromJson(jsonBody, LoginRequest.class);

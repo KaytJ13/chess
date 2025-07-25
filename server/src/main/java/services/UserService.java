@@ -4,13 +4,12 @@ import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import dataaccess.UserDAO;
 import exception.ResponseException;
-import handlers.LoginHandler.LoginRequest;
-import handlers.RegisterHandler.RegisterRequest;
+import requests.RegisterRequest;
 import model.AuthData;
 import model.UserData;
 import org.mindrot.jbcrypt.BCrypt;
+import requests.LoginRequest;
 
-import java.util.Objects;
 import java.util.UUID;
 
 public class UserService {

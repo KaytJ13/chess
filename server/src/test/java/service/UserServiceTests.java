@@ -2,11 +2,11 @@ package service;
 
 import dataaccess.*;
 import exception.ResponseException;
-import handlers.LoginHandler;
-import handlers.RegisterHandler;
 import model.AuthData;
 import model.UserData;
 import org.junit.jupiter.api.Test;
+import requests.LoginRequest;
+import requests.RegisterRequest;
 import services.UserService;
 
 import java.util.Objects;
@@ -19,7 +19,7 @@ public class UserServiceTests {
         UserService userService = new UserService(userDAO, new MemoryAuthDAO());
 
         try {
-            userService.register(new RegisterHandler.RegisterRequest("username1", "password",
+            userService.register(new RegisterRequest("username1", "password",
                     "email"));
             UserDAO userDAO2 = new MemoryUserDAO();
             userDAO2.createUser(new UserData("username1", "password", "email"));
@@ -38,7 +38,7 @@ public class UserServiceTests {
         UserService userService = new UserService(userDAO, new MemoryAuthDAO());
 
         try {
-            userService.register(new RegisterHandler.RegisterRequest("username1", null,
+            userService.register(new RegisterRequest("username1", null,
                     "email"));
         } catch (ResponseException e) {
             assert true;
@@ -57,7 +57,7 @@ public class UserServiceTests {
             UserDAO userDAO2 = new MemoryUserDAO();
             userDAO2.createUser(new UserData("username1", "password", "email"));
 
-            AuthData authData = userService.login(new LoginHandler.LoginRequest("username1",
+            AuthData authData = userService.login(new LoginRequest("username1",
                     "password"));
 
             assert Objects.nonNull(authData);
@@ -76,7 +76,7 @@ public class UserServiceTests {
             UserDAO userDAO2 = new MemoryUserDAO();
             userDAO2.createUser(new UserData("username1", "password", "email"));
 
-            userService.login(new LoginHandler.LoginRequest("username1", "pass"));
+            userService.login(new LoginRequest("username1", "pass"));
         } catch (ResponseException e) {
             assert true;
         } catch (DataAccessException e) {

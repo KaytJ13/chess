@@ -5,7 +5,7 @@ import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
 import exception.ResponseException;
-import handlers.JoinGameHandler;
+import requests.JoinRequest;
 import handlers.ListGamesHandler;
 import model.AuthData;
 import model.GameData;
@@ -68,7 +68,7 @@ public class GameService {
         return new ListGamesHandler.ListGamesResponse(finalGameList);
     }
 
-    public void joinGame(JoinGameHandler.JoinRequest joinRequest, String authToken)
+    public void joinGame(JoinRequest joinRequest, String authToken)
             throws ResponseException, DataAccessException {
         if (authToken == null || joinRequest.playerColor() == null || joinRequest.gameID() == 0) {
             throw new ResponseException(400, "Error: bad request");

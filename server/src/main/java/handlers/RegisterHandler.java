@@ -3,6 +3,7 @@ package handlers;
 import dataaccess.DataAccessException;
 import exception.ResponseException;
 import model.AuthData;
+import requests.RegisterRequest;
 import services.UserService;
 import com.google.gson.Gson;
 
@@ -12,8 +13,6 @@ public class RegisterHandler {
     public RegisterHandler(UserService userService) {
         this.userService = userService;
     }
-
-    public record RegisterRequest(String username, String password, String email) { }
 
     public Object register(String jsonBody) throws ResponseException, DataAccessException {
         RegisterRequest request = new Gson().fromJson(jsonBody, RegisterRequest.class);

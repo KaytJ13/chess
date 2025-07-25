@@ -6,10 +6,10 @@ import dataaccess.DataAccessException;
 import dataaccess.MemoryAuthDAO;
 import dataaccess.MemoryGameDAO;
 import exception.ResponseException;
-import handlers.JoinGameHandler;
 import handlers.ListGamesHandler;
 import model.AuthData;
 import org.junit.jupiter.api.Test;
+import requests.JoinRequest;
 import services.GameService;
 
 import java.util.Objects;
@@ -87,7 +87,7 @@ public class GameServiceTests {
 
         try {
             gameService.createGame("game", "auth1");
-            gameService.joinGame(new JoinGameHandler.JoinRequest(ChessGame.TeamColor.WHITE, 1),
+            gameService.joinGame(new JoinRequest(ChessGame.TeamColor.WHITE, 1),
                     "auth1");
         } catch (Exception e) {
             assert true;
@@ -100,10 +100,10 @@ public class GameServiceTests {
         GameService gameService = new GameService(authDAO, new MemoryGameDAO());
 
         try {
-            gameService.joinGame(new JoinGameHandler.JoinRequest(ChessGame.TeamColor.WHITE, 4),
+            gameService.joinGame(new JoinRequest(ChessGame.TeamColor.WHITE, 4),
                     "auth1");
             authDAO.createAuth(new AuthData("username1", "auth1"));
-            gameService.joinGame(new JoinGameHandler.JoinRequest(ChessGame.TeamColor.WHITE, 4),
+            gameService.joinGame(new JoinRequest(ChessGame.TeamColor.WHITE, 4),
                     "auth1");
         } catch (Exception e) {
             assert true;
