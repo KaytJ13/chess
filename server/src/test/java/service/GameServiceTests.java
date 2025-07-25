@@ -6,10 +6,11 @@ import dataaccess.DataAccessException;
 import dataaccess.MemoryAuthDAO;
 import dataaccess.MemoryGameDAO;
 import exception.ResponseException;
-import handlers.ListGamesHandler;
 import model.AuthData;
 import org.junit.jupiter.api.Test;
 import requests.JoinRequest;
+import requests.ListGamesResponse;
+import requests.UserFriendlyGameData;
 import services.GameService;
 
 import java.util.Objects;
@@ -52,12 +53,12 @@ public class GameServiceTests {
 
         try {
             gameService.createGame("game1", "auth1");
-            ListGamesHandler.ListGamesResponse actual = gameService.listGames("auth1");
-            GameService.UserFriendlyGameData game1 = new GameService.UserFriendlyGameData(1, null,
+            ListGamesResponse actual = gameService.listGames("auth1");
+            UserFriendlyGameData game1 = new UserFriendlyGameData(1, null,
                     null, "game1");
-            GameService.UserFriendlyGameData[] games = new GameService.UserFriendlyGameData[1];
+            UserFriendlyGameData[] games = new UserFriendlyGameData[1];
             games[0] = game1;
-            ListGamesHandler.ListGamesResponse expected = new ListGamesHandler.ListGamesResponse(games);
+            ListGamesResponse expected = new ListGamesResponse(games);
             for (int i = 0; i < actual.games().length; i++) {
                 assert Objects.equals(actual.games()[i], expected.games()[i]);
             }

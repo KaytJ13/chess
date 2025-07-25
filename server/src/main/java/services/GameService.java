@@ -6,9 +6,10 @@ import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
 import exception.ResponseException;
 import requests.JoinRequest;
-import handlers.ListGamesHandler;
 import model.AuthData;
 import model.GameData;
+import requests.ListGamesResponse;
+import requests.UserFriendlyGameData;
 
 import java.util.Objects;
 
@@ -47,9 +48,7 @@ public class GameService {
         return gameID;
     }
 
-    public record UserFriendlyGameData(int gameID, String whiteUsername, String blackUsername, String gameName) {}
-
-    public ListGamesHandler.ListGamesResponse listGames(String authToken)
+    public ListGamesResponse listGames(String authToken)
             throws ResponseException, DataAccessException {
         if (authToken == null) {
             throw new ResponseException(400, "Error: bad request");
@@ -65,7 +64,7 @@ public class GameService {
                     data.blackUsername(), data.gameName());
             finalGameList[i] = updatedData;
         }
-        return new ListGamesHandler.ListGamesResponse(finalGameList);
+        return new ListGamesResponse(finalGameList);
     }
 
     public void joinGame(JoinRequest joinRequest, String authToken)
