@@ -92,14 +92,11 @@ public class ServerFacade {
         }
     }
 
-    record ExceptionJsonHelper(int status, String message) { }
-
     private void throwIfNotSuccessful(HttpURLConnection http) throws IOException, ResponseException {
         var status = http.getResponseCode();
         if (!isSuccessful(status)) {
             try (InputStream respErr = http.getErrorStream()) {
                 if (respErr != null) {
-//                    ExceptionJsonHelper exHelper = new Gson().fromJson(respErr.toString(), ExceptionJsonHelper.class);
                     throw exceptionFromJson(respErr);
                 }
             }

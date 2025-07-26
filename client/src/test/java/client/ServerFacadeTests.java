@@ -34,7 +34,7 @@ public class ServerFacadeTests {
         try {
             facade.clear();
         } catch (ResponseException e) {
-            return;
+                System.out.print("Clear failed");
         }
     }
 
