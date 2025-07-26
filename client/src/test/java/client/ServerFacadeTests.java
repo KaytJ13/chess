@@ -1,5 +1,6 @@
 package client;
 
+import chess.ChessGame;
 import exception.ResponseException;
 import model.AuthData;
 import org.junit.jupiter.api.*;
@@ -25,12 +26,16 @@ public class ServerFacadeTests {
 
     @AfterAll
     static void stopServer() {
+        server.stop();
+    }
+
+    @AfterEach
+    void cleanUp() {
         try {
             facade.clear();
         } catch (ResponseException e) {
             return;
         }
-        server.stop();
     }
 
 
@@ -70,9 +75,9 @@ public class ServerFacadeTests {
     public void testLoginNegative() {
         try {
             facade.login(new LoginRequest("Amy", "march"));
-            assert true;
+            assert false;
         } catch (Exception e) {
-            assert false : e.getMessage();
+            assert true;
         }
     }
 
@@ -129,7 +134,7 @@ public class ServerFacadeTests {
             assert Objects.equals(games.games()[0].gameName(), "Game1") &&
                     Objects.equals(games.games()[1].gameName(), "Game2");
         } catch (Exception e) {
-            assert false;
+            assert false : e.getMessage();
         }
     }
 
@@ -138,6 +143,35 @@ public class ServerFacadeTests {
         try {
             AuthData auth = new AuthData("User", "StringHere");
             facade.listGames(auth.authToken());
+            assert false;
+        } catch (Exception e) {
+            assert true;
+        }
+    }
+
+    @Test
+    public void testJoinGamePositive() {
+        try {
+            AuthData auth = facade.register(new RegisterRequest("user", "pass", "email"));
+            facade.createGame(new CreateGameRequest("Game1"), auth.authToken());
+            facade.joinGame(new JoinRequest(ChessGame.TeamColor.WHITE, 1), auth.authToken());
+            ListGamesResponse games = facade.listGames(auth.authToken());
+            for (UserFriendlyGameData game : games.games()) {
+                System.out.printf(game.toString());
+            }
+            assert Objects.equals(games.games()[0].whiteUsername(), "user") &&
+                    Objects.equals(games.games()[0].gameName(), "Game1");
+            assert true;
+        } catch (Exception e) {
+            assert false : e.getMessage();
+        }
+    }
+
+    @Test
+    public void testJoinGameNegative() {
+        try {
+            AuthData auth = facade.register(new RegisterRequest("user", "pass", "email"));
+            facade.joinGame(new JoinRequest(ChessGame.TeamColor.WHITE, 1), auth.authToken());
             assert false;
         } catch (Exception e) {
             assert true;
