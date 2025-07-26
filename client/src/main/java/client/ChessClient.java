@@ -1,7 +1,10 @@
 package client;
 
+import chess.ChessGame;
 import exception.ResponseException;
 import model.AuthData;
+import requests.CreateGameRequest;
+import requests.CreateGameResponse;
 import requests.LoginRequest;
 import requests.RegisterRequest;
 import server.ServerFacade;
@@ -16,6 +19,7 @@ public class ChessClient {
     private int replLoopNum = 1; // 1 is logged out (Chess Login), 2 is logged in (Chess), 3 is in game (Chess Game)
     private String authToken = null;
     private String username = null;
+    private ChessGame currentGame;
 
     public ChessClient(String url) {
         serverUrl = url;
@@ -52,18 +56,23 @@ public class ChessClient {
         System.out.print("\nGoodbye!");
     }
 
-    public String eval(String userInput) {
+    private String eval(String userInput) {
         try {
             var tokens = userInput.toLowerCase().split(" ");
             var cmd = (tokens.length > 0) ? tokens[0] : "help";
             if (replLoopNum == 2) { // Post-login
                 return switch (cmd) {
                     case "logout" -> logout();
+                    case "create" -> createGame(tokens);
+                    case "list" -> listGames();
+                    case "join" -> joinGame(tokens);
+                    case "observe" -> observeGame(tokens);
                     default -> help();
                 };
             } else if (replLoopNum == 3) { // In Game
                 return switch (cmd) {
-                    case "tba" -> null;
+                    case "tba" -> null; // a filler line until I start phase 6
+                    case "draw" -> drawBoard();
                     default -> help();
                 };
             } else { // Pre-login
@@ -80,16 +89,16 @@ public class ChessClient {
         }
     }
 
-    public String help() {
+    private String help() {
         if (replLoopNum == 2) {
             return """
                     Valid commands:
                     help - View valid commands
                     logout - Logout
-                    create game <GAME NAME> - Create a new chess game
-                    list games - View current chess games
-                    play game <GAME ID> <TEAM COLOR> - Join an existing game
-                    observe game - View an existing game""";
+                    create <GAME NAME> - Create a new chess game
+                    list - View current chess games
+                    join <GAME ID> <TEAM COLOR> - Join an existing game
+                    observe <GAME ID> - View an existing game""";
         } else if (replLoopNum == 3) {
             return """
                     Valid commands:
@@ -105,11 +114,11 @@ public class ChessClient {
         }
     }
 
-    public String quit() {
+    private String quit() {
         return "quit";
     }
 
-    public String login(String[] params) throws ResponseException {
+    private String login(String[] params) throws ResponseException {
         if (params.length < 3) {
             throw new ResponseException(400, "Missing username or password");
         }
@@ -124,7 +133,7 @@ public class ChessClient {
         }
     }
 
-    public String register(String[] params) throws ResponseException {
+    private String register(String[] params) throws ResponseException {
         if (params.length < 4) {
             throw new ResponseException(400, "Missing username, password, or email");
         }
@@ -139,7 +148,7 @@ public class ChessClient {
         }
     }
 
-    public String logout() throws ResponseException {
+    private String logout() throws ResponseException {
         facade.logout(authToken);
         String message = "Goodbye, " + username + "!";
 
@@ -148,5 +157,34 @@ public class ChessClient {
         username = null;
 
         return message;
+    }
+
+    private String createGame(String[] params) throws ResponseException {
+        if (params.length < 2) {
+            throw new ResponseException(400, "Missing game name");
+        }
+        try {
+            CreateGameResponse response = facade.createGame(new CreateGameRequest(params[1]), authToken);
+            return "Created " + params[1] + " with Game ID " + response.gameID();
+        } catch (ResponseException e) {
+            throw new ResponseException(401, "Not logged in");
+        }
+
+    }
+
+    private String listGames() {
+        return "";
+    }
+
+    private String joinGame(String[] params) {
+        return "";
+    }
+
+    private String observeGame(String[] params) {
+        return "";
+    }
+
+    private String drawBoard() {
+        return "";
     }
 }
