@@ -37,8 +37,8 @@ public class ServerFacadeTests {
     @Test
     public void testRegisterPositive() {
         try {
-            AuthData auth = facade.register(new RegisterRequest("ger", "ger", "ger@ld.com"));
-            auth = facade.login(new LoginRequest("ger", "ger"));
+            facade.register(new RegisterRequest("ger", "ger", "ger@ld.com"));
+            AuthData auth = facade.login(new LoginRequest("ger", "ger"));
             assert auth != null;
         } catch (Exception e) {
             assert false;
@@ -58,7 +58,7 @@ public class ServerFacadeTests {
     @Test
     public void testLoginPositive() {
         try {
-            AuthData auth = facade.register(new RegisterRequest("Amy", "march", "artist@com"));
+            facade.register(new RegisterRequest("Amy", "march", "artist@email.com"));
             facade.login(new LoginRequest("Amy", "march"));
             assert true;
         } catch (Exception e) {
@@ -73,6 +73,74 @@ public class ServerFacadeTests {
             assert true;
         } catch (Exception e) {
             assert false : e.getMessage();
+        }
+    }
+
+    @Test
+    public void testLogoutPositive() {
+        try {
+            AuthData auth = facade.register(new RegisterRequest("Jo", "march", "writer@com"));
+            facade.logout(auth.authToken());
+            assert true;
+        } catch (Exception e) {
+            assert false : e.getMessage();
+        }
+    }
+
+    @Test
+    public void testLogoutNegative() {
+        try {
+            facade.logout("definitelyAnAuthToken");
+            assert false;
+        } catch (Exception e) {
+            assert true;
+        }
+    }
+
+    @Test
+    public void testCreateGamePositive() {
+        try {
+            AuthData auth = facade.register(new RegisterRequest("user", "pass", "email"));
+            facade.createGame(new CreateGameRequest("Game1"), auth.authToken());
+            ListGamesResponse games = facade.listGames(auth.authToken());
+            assert Objects.equals(games.games()[0].gameName(), "Game1");
+        } catch (Exception e) {
+            assert false;
+        }
+    }
+
+    @Test
+    public void testCreateGameNegative() {
+        try {
+            facade.createGame(new CreateGameRequest("Game1"), " ");
+            assert false;
+        } catch (Exception e) {
+            assert true;
+        }
+    }
+
+    @Test
+    public void testListGamesPositive() {
+        try {
+            AuthData auth = facade.register(new RegisterRequest("user", "pass", "email"));
+            facade.createGame(new CreateGameRequest("Game1"), auth.authToken());
+            facade.createGame(new CreateGameRequest("Game2"), auth.authToken());
+            ListGamesResponse games = facade.listGames(auth.authToken());
+            assert Objects.equals(games.games()[0].gameName(), "Game1") &&
+                    Objects.equals(games.games()[1].gameName(), "Game2");
+        } catch (Exception e) {
+            assert false;
+        }
+    }
+
+    @Test
+    public void testListGamesNegative() {
+        try {
+            AuthData auth = new AuthData("User", "StringHere");
+            facade.listGames(auth.authToken());
+            assert false;
+        } catch (Exception e) {
+            assert true;
         }
     }
 
