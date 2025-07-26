@@ -3,9 +3,9 @@ package client;
 import exception.ResponseException;
 import model.AuthData;
 import requests.LoginRequest;
+import requests.RegisterRequest;
 import server.ServerFacade;
 
-import java.util.Objects;
 import java.util.Scanner;
 import static ui.EscapeSequences.*;
 
@@ -24,8 +24,8 @@ public class ChessClient {
 
     public void run() {
         String result = "";
-        System.out.print("Welcome to Chess");
-        System.out.print(help());
+        System.out.print(SET_TEXT_COLOR_BLUE + WHITE_QUEEN + " Welcome to Chess " + WHITE_QUEEN + "\n");
+        System.out.print(SET_TEXT_COLOR_MAGENTA + help());
 
         Scanner scanner = new Scanner(System.in);
         while (!result.equals("quit")) {
@@ -42,7 +42,7 @@ public class ChessClient {
             try {
                 result = eval(line);
                 if (!result.equals("quit")) {
-                    System.out.print(SET_TEXT_COLOR_GREEN + result);
+                    System.out.print(SET_TEXT_COLOR_MAGENTA + result);
                 }
             } catch (Throwable e) {
                 var message = e.toString();
@@ -58,17 +58,19 @@ public class ChessClient {
             var cmd = (tokens.length > 0) ? tokens[0] : "help";
             if (replLoopNum == 2) { // Post-login
                 return switch (cmd) {
+                    case "logout" -> logout();
                     default -> help();
                 };
             } else if (replLoopNum == 3) { // In Game
                 return switch (cmd) {
-                    case "help" -> help();
+                    case "tba" -> null;
                     default -> help();
                 };
             } else { // Pre-login
                 return switch (cmd) {
                     case "quit" -> quit();
                     case "login" -> login(tokens);
+                    case "register" -> register(tokens);
                     default -> help();
                 };
             }
@@ -119,5 +121,22 @@ public class ChessClient {
         username = auth.username();
         replLoopNum = 2;
         return "Welcome, " + username + "!";
+    }
+
+    public String register(String[] params) throws ResponseException {
+        if (params.length < 4) {
+            throw new ResponseException(403, "Missing username or password");
+        }
+        AuthData auth = facade.register(new RegisterRequest(params[1], params[2], params[3]));
+        authToken = auth.authToken();
+        username = auth.username();
+        replLoopNum = 2;
+        return "Welcome, " + username + "!";
+    }
+
+    public String logout() throws ResponseException {
+        facade.logout(authToken);
+        replLoopNum = 1;
+        return "Goodbye, " + username + "!";
     }
 }

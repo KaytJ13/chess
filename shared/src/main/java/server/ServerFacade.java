@@ -7,7 +7,6 @@ import requests.*;
 
 import java.io.*;
 import java.net.*;
-import java.util.HashMap;
 
 public class ServerFacade {
 
@@ -73,7 +72,6 @@ public class ServerFacade {
 
             writeBody(request, http);
             http.connect();
-            throwIfNotSuccessful(http);
             return readBody(http, responseClass);
         } catch (ResponseException ex) {
             throw ex;
@@ -92,40 +90,28 @@ public class ServerFacade {
         }
     }
 
-    private void throwIfNotSuccessful(HttpURLConnection http) throws IOException, ResponseException {
-        var status = http.getResponseCode();
-        if (!isSuccessful(status)) {
-            try (InputStream respErr = http.getErrorStream()) {
-                if (respErr != null) {
-                    throw exceptionFromJson(respErr);
-                }
-            }
-
-            throw new ResponseException(status, "other failure: " + status);
-        }
-    }
-
-    private static <T> T readBody(HttpURLConnection http, Class<T> responseClass) throws IOException {
+    private static <T> T readBody(HttpURLConnection http, Class<T> responseClass) throws IOException, ResponseException {
         T response = null;
+        var status = http.getResponseCode();
+
         if (http.getContentLength() < 0) {
             try (InputStream respBody = http.getInputStream()) {
                 InputStreamReader reader = new InputStreamReader(respBody);
-                if (responseClass != null) {
-                    response = new Gson().fromJson(reader, responseClass);
+                if (status == 200) {
+                    if (responseClass != null) {
+                        response = new Gson().fromJson(reader, responseClass);
+                    }
+                } else {
+                    System.out.print(reader.toString());
+                    ResponseException ex = new Gson().fromJson(reader, ResponseException.class);
+                    System.out.print(ex.getMessage() + "\n" + ex.toJson());
+                    throw ex;
+                    //FACADE ISN'T HANDLING ERRORS RIGHT AND I'M NOT GETTING THE RIGHT MESSAGES
                 }
+
             }
         }
         return response;
     }
 
-    private boolean isSuccessful(int status) {
-        return status / 100 == 2;
-    }
-
-    private ResponseException exceptionFromJson(InputStream stream) {
-        var map = new Gson().fromJson(new InputStreamReader(stream), HashMap.class);
-        var status = ((Double)map.get("status")).intValue();
-        String message = map.get("message").toString();
-        return new ResponseException(status, message);
-    }
 }
