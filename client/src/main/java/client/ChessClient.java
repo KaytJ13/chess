@@ -25,7 +25,7 @@ public class ChessClient {
     public void run() {
         String result = "";
         System.out.print(SET_TEXT_COLOR_BLUE + WHITE_QUEEN + " Welcome to Chess " + WHITE_QUEEN + "\n");
-        System.out.print(SET_TEXT_COLOR_MAGENTA + help());
+        System.out.print(SET_TEXT_COLOR_MAGENTA + help() + "\n");
 
         Scanner scanner = new Scanner(System.in);
         while (!result.equals("quit")) {
@@ -42,7 +42,7 @@ public class ChessClient {
             try {
                 result = eval(line);
                 if (!result.equals("quit")) {
-                    System.out.print(SET_TEXT_COLOR_MAGENTA + result);
+                    System.out.print(SET_TEXT_COLOR_MAGENTA + "\n" + result + "\n");
                 }
             } catch (Throwable e) {
                 var message = e.toString();
@@ -89,22 +89,19 @@ public class ChessClient {
                     create game <GAME NAME> - Create a new chess game
                     list games - View current chess games
                     play game <GAME ID> <TEAM COLOR> - Join an existing game
-                    observe game - View an existing game
-                    """;
+                    observe game - View an existing game""";
         } else if (replLoopNum == 3) {
             return """
                     Valid commands:
                     help - View valid commands
-                    other commands coming soon!
-                    """;
+                    other commands coming soon!""";
         } else {
             return """
                     Valid commands:
                     help - View valid commands
                     quit - Exit the application
                     login <USERNAME> <PASSWORD> - Login an existing user
-                    register <USERNAME> <PASSWORD> <EMAIL> - Register a new user
-                    """;
+                    register <USERNAME> <PASSWORD> <EMAIL> - Register a new user""";
         }
     }
 
@@ -114,29 +111,42 @@ public class ChessClient {
 
     public String login(String[] params) throws ResponseException {
         if (params.length < 3) {
-            throw new ResponseException(403, "Missing username or password");
+            throw new ResponseException(400, "Missing username or password");
         }
-        AuthData auth = facade.login(new LoginRequest(params[1], params[2]));
-        authToken = auth.authToken();
-        username = auth.username();
-        replLoopNum = 2;
-        return "Welcome, " + username + "!";
+        try {
+            AuthData auth = facade.login(new LoginRequest(params[1], params[2]));
+            authToken = auth.authToken();
+            username = auth.username();
+            replLoopNum = 2;
+            return "Welcome, " + username + "!";
+        } catch (ResponseException e) {
+            throw new ResponseException(401, "Username or password incorrect");
+        }
     }
 
     public String register(String[] params) throws ResponseException {
         if (params.length < 4) {
-            throw new ResponseException(403, "Missing username or password");
+            throw new ResponseException(400, "Missing username, password, or email");
         }
-        AuthData auth = facade.register(new RegisterRequest(params[1], params[2], params[3]));
-        authToken = auth.authToken();
-        username = auth.username();
-        replLoopNum = 2;
-        return "Welcome, " + username + "!";
+        try {
+            AuthData auth = facade.register(new RegisterRequest(params[1], params[2], params[3]));
+            authToken = auth.authToken();
+            username = auth.username();
+            replLoopNum = 2;
+            return "Welcome, " + username + "!";
+        } catch (ResponseException e) {
+            throw new ResponseException(403, "Username already taken");
+        }
     }
 
     public String logout() throws ResponseException {
         facade.logout(authToken);
+        String message = "Goodbye, " + username + "!";
+
         replLoopNum = 1;
-        return "Goodbye, " + username + "!";
+        authToken = null;
+        username = null;
+
+        return message;
     }
 }

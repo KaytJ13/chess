@@ -102,11 +102,7 @@ public class ServerFacade {
                         response = new Gson().fromJson(reader, responseClass);
                     }
                 } else {
-                    System.out.print(reader.toString());
-                    ResponseException ex = new Gson().fromJson(reader, ResponseException.class);
-                    System.out.print(ex.getMessage() + "\n" + ex.toJson());
-                    throw ex;
-                    //FACADE ISN'T HANDLING ERRORS RIGHT AND I'M NOT GETTING THE RIGHT MESSAGES
+                    throw new Gson().fromJson(reader, ResponseException.class);
                 }
 
             }
