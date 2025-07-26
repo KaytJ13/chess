@@ -3,12 +3,10 @@ package client;
 import chess.ChessGame;
 import exception.ResponseException;
 import model.AuthData;
-import requests.CreateGameRequest;
-import requests.CreateGameResponse;
-import requests.LoginRequest;
-import requests.RegisterRequest;
+import requests.*;
 import server.ServerFacade;
 
+import java.util.Objects;
 import java.util.Scanner;
 import static ui.EscapeSequences.*;
 
@@ -97,7 +95,7 @@ public class ChessClient {
                     logout - Logout
                     create <GAME NAME> - Create a new chess game
                     list - View current chess games
-                    join <GAME ID> <TEAM COLOR> - Join an existing game
+                    join <GAME ID> <TEAM COLOR (white/black)> - Join an existing game
                     observe <GAME ID> - View an existing game""";
         } else if (replLoopNum == 3) {
             return """
@@ -165,22 +163,51 @@ public class ChessClient {
         }
         try {
             CreateGameResponse response = facade.createGame(new CreateGameRequest(params[1]), authToken);
-            return "Created " + params[1] + " with Game ID " + response.gameID();
+            return "Created game number " + response.gameID() + ": " + params[1];
         } catch (ResponseException e) {
             throw new ResponseException(401, "Not logged in");
         }
 
     }
 
-    private String listGames() {
-        return "";
+    private String listGames() throws ResponseException {
+        try {
+            StringBuilder message = new StringBuilder();
+            ListGamesResponse response = facade.listGames(authToken);
+            for (UserFriendlyGameData game : response.games()) {
+                message.append("\n").append(game.gameID()).append(". Name: ").append(game.gameName());
+                message.append("   White team: ").append(game.whiteUsername());
+                message.append("   Black team: ").append(game.blackUsername()).append("\n");
+            }
+            return message.toString();
+        } catch (ResponseException e) {
+            throw new ResponseException(401, "Not logged in");
+        }
     }
 
-    private String joinGame(String[] params) {
-        return "";
+    private String joinGame(String[] params) throws ResponseException{
+        if (params.length < 3) {
+            throw new ResponseException(400, "Missing Game ID or team color");
+        } else if (!params[1].equals("white") && !params[1].equals("black")) {
+            throw new ResponseException(400, "Team color must be \"white\" or \"black\"");
+        }
+
+        try {
+            ChessGame.TeamColor color = params[1].equals("white") ? ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK;
+            int gameID = Integer.parseInt(params[2]); // catch if this fails and throw must be number
+            // check if valid game id (or save for catch block)
+            facade.joinGame(new JoinRequest(color, gameID), authToken);
+            // convert params to TeamColor and int
+
+        } catch (ResponseException e) {
+            //already taken (403)
+            //no game with id (400)
+            throw new ResponseException(400, "Something happened . . .");
+        }
+        return ""; //delete once we actually have a return statement
     }
 
-    private String observeGame(String[] params) {
+    private String observeGame(String[] params) throws ResponseException {
         return "";
     }
 

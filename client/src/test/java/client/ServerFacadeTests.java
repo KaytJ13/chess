@@ -171,6 +171,8 @@ public class ServerFacadeTests {
     public void testJoinGameNegative() {
         try {
             AuthData auth = facade.register(new RegisterRequest("user", "pass", "email"));
+            facade.createGame(new CreateGameRequest("game1"), auth.authToken());
+            facade.joinGame(new JoinRequest(ChessGame.TeamColor.WHITE, 1), auth.authToken());
             facade.joinGame(new JoinRequest(ChessGame.TeamColor.WHITE, 1), auth.authToken());
             assert false;
         } catch (Exception e) {
