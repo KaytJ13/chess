@@ -60,10 +60,10 @@ public class ServerFacade {
         makeRequest("DELETE", path, null, null, null);
     }
 
-    public ChessGame getGameState(int gameID, String authToken) throws ResponseException {
-        var path = "/state";
-        return makeRequest("GET", path, new Gson().toJson(gameID), ChessGame.class, authToken);
-    }
+//    public ChessGame getGameState(GetGameStateRequest request, String authToken) throws ResponseException {
+//        var path = "/session";
+//        return makeRequest("GET", path, new Gson().toJson(request), ChessGame.class, authToken);
+//    }
 
     private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass, String authToken)
             throws ResponseException {

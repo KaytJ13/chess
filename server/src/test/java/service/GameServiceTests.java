@@ -91,7 +91,7 @@ public class GameServiceTests {
             gameService.joinGame(new JoinRequest(ChessGame.TeamColor.WHITE, 1),
                     "auth1");
         } catch (Exception e) {
-            assert true;
+            assert false;
         }
     }
 
@@ -106,6 +106,33 @@ public class GameServiceTests {
             authDAO.createAuth(new AuthData("username1", "auth1"));
             gameService.joinGame(new JoinRequest(ChessGame.TeamColor.WHITE, 4),
                     "auth1");
+        } catch (Exception e) {
+            assert true;
+        }
+    }
+
+    @Test
+    void testGetGameStatePositive() {
+        try {
+            AuthDAO authDAO = new MemoryAuthDAO();
+            GameService gameService = new GameService(authDAO, new MemoryGameDAO());
+            authDAO.createAuth(new AuthData("username1", "auth1"));
+            gameService.createGame("game", "auth1");
+            ChessGame game = gameService.getGameState(1, "auth1");
+            assert game.equals(new ChessGame());
+        } catch (Exception e) {
+            assert false;
+        }
+    }
+
+    @Test
+    void testGetGameStateNegative() {
+        try {
+            AuthDAO authDAO = new MemoryAuthDAO();
+            GameService gameService = new GameService(authDAO, new MemoryGameDAO());
+            authDAO.createAuth(new AuthData("username1", "auth1"));
+            gameService.getGameState(1, "auth1");
+            assert false;
         } catch (Exception e) {
             assert true;
         }
