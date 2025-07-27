@@ -195,4 +195,17 @@ public class ServerFacadeTests {
         }
     }
 
+    @Test
+    public void testGetGameStatePositive() {
+        try {
+            AuthData auth = facade.register(new RegisterRequest("ger", "ger", "ger@ld.com"));
+            facade.createGame(new CreateGameRequest("game1"), auth.authToken());
+            ChessGame game = facade.getGameState(1, auth.authToken());
+            System.out.printf(game.toString());
+            assert game.equals(new ChessGame());
+        } catch (Exception e) {
+            assert false;
+        }
+    }
+
 }

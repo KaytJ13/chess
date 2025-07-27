@@ -17,7 +17,7 @@ public class ChessClient {
     private int replLoopNum = 1; // 1 is logged out (Chess Login), 2 is logged in (Chess), 3 is in game (Chess Game)
     private String authToken = null;
     private String username = null;
-    private ChessGame currentGame;
+    private ChessGame currentGame = null;
 
     public ChessClient(String url) {
         serverUrl = url;
@@ -69,7 +69,7 @@ public class ChessClient {
                 };
             } else if (replLoopNum == 3) { // In Game
                 return switch (cmd) {
-                    case "tba" -> null; // a filler line until I start phase 6
+                    case "leave" -> leave();
                     case "draw" -> drawBoard();
                     default -> help();
                 };
@@ -101,6 +101,7 @@ public class ChessClient {
             return """
                     Valid commands:
                     help - View valid commands
+                    leave - Temporary exit command to leave game view
                     other commands coming soon!""";
         } else {
             return """
@@ -188,23 +189,31 @@ public class ChessClient {
     private String joinGame(String[] params) throws ResponseException{
         if (params.length < 3) {
             throw new ResponseException(400, "Missing Game ID or team color");
-        } else if (!params[1].equals("white") && !params[1].equals("black")) {
+        } else if (!params[2].equals("white") && !params[2].equals("black")) {
             throw new ResponseException(400, "Team color must be \"white\" or \"black\"");
         }
 
         try {
-            ChessGame.TeamColor color = params[1].equals("white") ? ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK;
-            int gameID = Integer.parseInt(params[2]); // catch if this fails and throw must be number
-            // check if valid game id (or save for catch block)
+            ChessGame.TeamColor color = params[2].equals("white") ? ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK;
+            int gameID = Integer.parseInt(params[1]);
             facade.joinGame(new JoinRequest(color, gameID), authToken);
-            // convert params to TeamColor and int
 
+            replLoopNum = 3;
+            // find a way to access the ChessGame (probably write new method)
+
+            return "Joined game " + gameID + "\n" + drawBoard();
         } catch (ResponseException e) {
-            //already taken (403)
-            //no game with id (400)
+            if (e.getStatusCode() == 403) {
+                // already taken (403)
+                throw new ResponseException(403, "Team already filled");
+            } else if (e.getStatusCode() == 400) {
+                // no game with id (400)
+                throw new ResponseException(400, "No game exists with that ID");
+            }
             throw new ResponseException(400, "Something happened . . .");
+        } catch (Exception e) {
+            throw new ResponseException(400, "Game ID must be a number");
         }
-        return ""; //delete once we actually have a return statement
     }
 
     private String observeGame(String[] params) throws ResponseException {
@@ -212,6 +221,13 @@ public class ChessClient {
     }
 
     private String drawBoard() {
+        assert currentGame != null : "A ChessGame must be in progress";
+        // use the current game variable to access the board and draw it
         return "";
+    }
+
+    private String leave() {
+        replLoopNum = 2;
+        return "Game view exited\n";
     }
 }

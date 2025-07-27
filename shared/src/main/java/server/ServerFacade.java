@@ -1,5 +1,6 @@
 package server;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
 import exception.ResponseException;
 import model.AuthData;
@@ -57,6 +58,11 @@ public class ServerFacade {
     public void clear() throws ResponseException {
         var path = "/db";
         makeRequest("DELETE", path, null, null, null);
+    }
+
+    public ChessGame getGameState(int gameID, String authToken) throws ResponseException {
+        var path = "/state";
+        return makeRequest("GET", path, new Gson().toJson(gameID), ChessGame.class, authToken);
     }
 
     private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass, String authToken)

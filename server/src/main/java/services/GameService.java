@@ -87,4 +87,15 @@ public class GameService {
         }
         gameDAO.updateGame(joinRequest.gameID(), joinRequest.playerColor(), authData.username());
     }
+
+    public ChessGame getGameState(int gameID, String authToken) throws ResponseException, DataAccessException {
+        if (authToken == null || gameID == 0) {
+            throw new ResponseException(400, "Error: bad request");
+        }
+        if (!matchAuth(authToken)) {
+            throw new ResponseException(401, "Error: unauthorized");
+        }
+        GameData game = gameDAO.getGame(gameID);
+        return game.game();
+    }
 }
