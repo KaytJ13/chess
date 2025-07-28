@@ -18,6 +18,7 @@ public class ChessClient {
     private String authToken = null;
     private String username = null;
     private ChessGame currentGame = null;
+    private ChessGame.TeamColor team = null;
 
     public ChessClient(String url) {
         serverUrl = url;
@@ -70,7 +71,7 @@ public class ChessClient {
             } else if (replLoopNum == 3) { // In Game
                 return switch (cmd) {
                     case "leave" -> leave();
-                    case "draw" -> drawBoard();
+                    case "draw" -> drawBoard(currentGame, team);
                     default -> help();
                 };
             } else { // Pre-login
@@ -194,14 +195,19 @@ public class ChessClient {
         }
 
         try {
-            ChessGame.TeamColor color = params[2].equals("white") ? ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK;
+            ChessGame.TeamColor color = params[2].equals("white") ? ChessGame.TeamColor.WHITE :
+                    ChessGame.TeamColor.BLACK;
             int gameID = Integer.parseInt(params[1]);
             facade.joinGame(new JoinRequest(color, gameID), authToken);
 
             replLoopNum = 3;
-            // find a way to access the ChessGame (probably write new method)
+            team = color;
+            // find a way to access the ChessGame (probably write new method) and set currentGame
+            // Until then:
+            currentGame = new ChessGame();
+            currentGame.getBoard().resetBoard();
 
-            return "Joined game " + gameID + "\n" + drawBoard();
+            return "Joined game " + gameID + "\n" + drawBoard(currentGame, color);
         } catch (ResponseException e) {
             if (e.getStatusCode() == 403) {
                 // already taken (403)
@@ -217,17 +223,43 @@ public class ChessClient {
     }
 
     private String observeGame(String[] params) throws ResponseException {
-        return "";
+        if (params.length < 2) {
+            throw new ResponseException(400, "Missing Game ID");
+        }
+
+        try {
+            int gameID = Integer.parseInt(params[1]);
+
+            // find a way to access the ChessGame (probably write new method) and set currentGame
+            // Until then:
+            currentGame = new ChessGame();
+            currentGame.getBoard().resetBoard();
+
+            return "Observing game " + gameID + "\n" + drawBoard(currentGame, ChessGame.TeamColor.WHITE);
+            // just calls drawBoard from whatever team perspective rn. Will do more in phase 6
+        } catch (Exception e) {
+            throw new ResponseException(400, "Game ID must be a number");
+        }
     }
 
-    private String drawBoard() {
-        assert currentGame != null : "A ChessGame must be in progress";
+    private String drawBoard(ChessGame game, ChessGame.TeamColor team) {
+        assert game != null && team != null : "A ChessGame must be in progress";
         // use the current game variable to access the board and draw it
-        return "";
+
+        // but until phase 6, we'll just draw a starter board
+        StringBuilder board = new StringBuilder();
+        if (team == ChessGame.TeamColor.WHITE) {
+            board.append(" WHITE PERSPECTIVE CHESS BOARD WILL GO HERE ");
+        } else {
+            board.append(" BLACK PERSPECTIVE CHESS BOARD WILL GO HERE ");
+        }
+        return board.toString();
     }
 
-    private String leave() {
+    private String leave() { // A temporary method for testing purposes
         replLoopNum = 2;
+        currentGame = null;
+        team = null;
         return "Game view exited\n";
     }
 }
