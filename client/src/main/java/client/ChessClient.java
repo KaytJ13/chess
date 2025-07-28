@@ -1,12 +1,12 @@
 package client;
 
+import chess.ChessBoard;
 import chess.ChessGame;
 import exception.ResponseException;
 import model.AuthData;
 import requests.*;
 import server.ServerFacade;
 
-import java.util.Objects;
 import java.util.Scanner;
 import static ui.EscapeSequences.*;
 
@@ -177,7 +177,7 @@ public class ChessClient {
             StringBuilder message = new StringBuilder();
             ListGamesResponse response = facade.listGames(authToken);
             for (UserFriendlyGameData game : response.games()) {
-                message.append("\n").append(game.gameID()).append(". Name: ").append(game.gameName());
+                message.append(game.gameID()).append(". Name: ").append(game.gameName());
                 message.append("   White team: ").append(game.whiteUsername());
                 message.append("   Black team: ").append(game.blackUsername()).append("\n");
             }
@@ -235,6 +235,7 @@ public class ChessClient {
             currentGame = new ChessGame();
             currentGame.getBoard().resetBoard();
 
+            replLoopNum = 3;
             return "Observing game " + gameID + "\n" + drawBoard(currentGame, ChessGame.TeamColor.WHITE);
             // just calls drawBoard from whatever team perspective rn. Will do more in phase 6
         } catch (Exception e) {
@@ -247,13 +248,17 @@ public class ChessClient {
         // use the current game variable to access the board and draw it
 
         // but until phase 6, we'll just draw a starter board
-        StringBuilder board = new StringBuilder();
+        StringBuilder out = new StringBuilder();
+        char[] headers = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'};
+        int[] bookends = {1, 2, 3, 4, 5, 6, 7, 8};
+        ChessBoard board = game.getBoard();
+
         if (team == ChessGame.TeamColor.WHITE) {
-            board.append(" WHITE PERSPECTIVE CHESS BOARD WILL GO HERE ");
+            out.append(" WHITE PERSPECTIVE CHESS BOARD WILL GO HERE ");
         } else {
-            board.append(" BLACK PERSPECTIVE CHESS BOARD WILL GO HERE ");
+            out.append(" BLACK PERSPECTIVE CHESS BOARD WILL GO HERE ");
         }
-        return board.toString();
+        return out.toString();
     }
 
     private String leave() { // A temporary method for testing purposes
