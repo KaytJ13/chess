@@ -6,7 +6,7 @@ import model.AuthData;
 import org.junit.jupiter.api.*;
 import requests.*;
 import server.Server;
-import server.ServerFacade;
+import serverFacade.ServerFacade;
 
 import java.util.Objects;
 
@@ -181,32 +181,28 @@ public class ServerFacadeTests {
     }
 
     @Test
-    public void testClear() {
+    public void testClear1() {
         try {
-            AuthData auth = facade.register(new RegisterRequest("ger", "ger", "ger@ld.com"));
-            facade.createGame(new CreateGameRequest("Gerald"), auth.authToken());
+            facade.register(new RegisterRequest("ger", "ger", "ger@ld.com"));
             facade.clear();
-            ListGamesResponse expected = new ListGamesResponse(new UserFriendlyGameData[0]);
-            assert Objects.equals(facade.listGames(auth.authToken()), expected);
-            auth = facade.login(new LoginRequest("ger", "ger"));
+            AuthData auth = facade.login(new LoginRequest("ger", "ger"));
             assert false : auth.username();
         } catch (ResponseException e) {
             assert true : e.getMessage();
         }
     }
 
-//    @Test
-//    public void testGetGameStatePositive() {
-//        try {
-//            AuthData auth = facade.register(new RegisterRequest("hermy", "wiz", "email"));
-//            facade.createGame(new CreateGameRequest("game1"), auth.authToken());
-//            ChessGame game = facade.getGameState(new GetGameStateRequest(1), auth.authToken());
-//            System.out.printf(game.toString());
-//            assert game.equals(new ChessGame());
-//            assert true;
-//        } catch (Exception e) {
-//            assert false;
-//        }
-//    }
+    @Test
+    public void testClear2() { //Not sure how you have a negative clear test . . . so I just made a second positive one
+        try {
+            AuthData auth = facade.register(new RegisterRequest("kate", "kate", "kate"));
+            facade.createGame(new CreateGameRequest("Game1"), auth.authToken());
+            facade.clear();
+            ListGamesResponse expected = new ListGamesResponse(new UserFriendlyGameData[0]);
+            assert Objects.equals(facade.listGames(auth.authToken()), expected);
+        } catch (ResponseException e) {
+            assert true : e.getMessage();
+        }
+    }
 
 }

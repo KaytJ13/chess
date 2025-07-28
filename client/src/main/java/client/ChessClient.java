@@ -6,7 +6,7 @@ import chess.ChessPosition;
 import exception.ResponseException;
 import model.AuthData;
 import requests.*;
-import server.ServerFacade;
+import serverFacade.ServerFacade;
 
 import java.util.Scanner;
 import static ui.EscapeSequences.*;

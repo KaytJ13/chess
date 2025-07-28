@@ -65,39 +65,39 @@ public class ChessPosition implements Cloneable {
     }
 
     public String drawSquare() {
-        String SET_BG_COLOR_LIGHT_GREY = "\u001b" + "[48;5;" + "242m";
-        String SET_BG_COLOR_DARK_GREEN = "\u001b" + "[48;5;" + "22m";
-        String SET_TEXT_COLOR_BLACK = "\u001b" + "[38;5;" + "0m";
-        String SET_TEXT_COLOR_WHITE = "\u001b" + "[38;5;" + "15m";
+        String bgLightGrey = "\u001b" + "[48;5;" + "242m";
+        String bgDarkGreen = "\u001b" + "[48;5;" + "22m";
+        String textBlack = "\u001b" + "[38;5;" + "0m";
+        String textWhite = "\u001b" + "[38;5;" + "15m";
 
-        String WHITE_KING = " ♔ ";
-        String WHITE_QUEEN = " ♕ ";
-        String WHITE_BISHOP = " ♗ ";
-        String WHITE_KNIGHT = " ♘ ";
-        String WHITE_ROOK = " ♖ ";
-        String WHITE_PAWN = " ♙ ";
-        String BLACK_KING = " ♚ ";
-        String BLACK_QUEEN = " ♛ ";
-        String BLACK_BISHOP = " ♝ ";
-        String BLACK_KNIGHT = " ♞ ";
-        String BLACK_ROOK = " ♜ ";
-        String BLACK_PAWN = " ♟ ";
-        String EMPTY = " \u2003 ";
+        String whiteKing = " ♔ ";
+        String whiteQueen = " ♕ ";
+        String whiteBishop = " ♗ ";
+        String whiteKnight = " ♘ ";
+        String whiteRook = " ♖ ";
+        String whitePawn = " ♙ ";
+        String blackKing = " ♚ ";
+        String blackQueen = " ♛ ";
+        String blackBishop = " ♝ ";
+        String blackKnight = " ♞ ";
+        String blackRook = " ♜ ";
+        String blackPawn = " ♟ ";
+        String empty = " \u2003 ";
 
         StringBuilder square = new StringBuilder();
         if (color == PositionColor.WHITE) {
-            square.append(SET_BG_COLOR_LIGHT_GREY);
+            square.append(bgLightGrey);
         } else {
-            square.append(SET_BG_COLOR_DARK_GREEN);
+            square.append(bgDarkGreen);
         }
         if (piece == null) {
-            square.append(EMPTY);
+            square.append(empty);
         } else if (piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
-            drawPiece(SET_TEXT_COLOR_WHITE, WHITE_KING, WHITE_QUEEN, WHITE_BISHOP, WHITE_KNIGHT, WHITE_ROOK,
-                    WHITE_PAWN, square);
+            drawPiece(textWhite, whiteKing, whiteQueen, whiteBishop, whiteKnight, whiteRook,
+                    whitePawn, square);
         } else {
-            drawPiece(SET_TEXT_COLOR_BLACK, BLACK_KING, BLACK_QUEEN, BLACK_BISHOP, BLACK_KNIGHT, BLACK_ROOK,
-                    BLACK_PAWN, square);
+            drawPiece(textBlack, blackKing, blackQueen, blackBishop, blackKnight, blackRook,
+                    blackPawn, square);
         }
         return square.toString();
     }

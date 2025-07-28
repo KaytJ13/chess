@@ -1,5 +1,28 @@
 #My notes:
 -
+Cut code that may be needed later . . .
+ServerFacadeTests:
+//    @Test
+//    public void testGetGameStatePositive() {
+//        try {
+//            AuthData auth = facade.register(new RegisterRequest("hermy", "wiz", "email"));
+//            facade.createGame(new CreateGameRequest("game1"), auth.authToken());
+//            ChessGame game = facade.getGameState(new GetGameStateRequest(1), auth.authToken());
+//            System.out.printf(game.toString());
+//            assert game.equals(new ChessGame());
+//            assert true;
+//        } catch (Exception e) {
+//            assert false;
+//        }
+//    }
+
+ServerFacade:
+// import chess.ChessGame
+
+//    public ChessGame getGameState(GetGameStateRequest request, String authToken) throws ResponseException {
+//        var path = "/session";
+//        return makeRequest("GET", path, new Gson().toJson(request), ChessGame.class, authToken);
+//    }
 
 - Things to think about after talking with the TAs:
   - Potentially change the whole structure for Phases 0 & 1. Instead of a board being an array of arrays of positions:
