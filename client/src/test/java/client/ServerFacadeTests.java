@@ -6,7 +6,7 @@ import model.AuthData;
 import org.junit.jupiter.api.*;
 import requests.*;
 import server.Server;
-import serverFacade.ServerFacade;
+import serverfacade.ServerFacade;
 
 import java.util.Objects;
 
