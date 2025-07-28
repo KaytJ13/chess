@@ -61,6 +61,7 @@ public class ServerFacade {
 
     private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass, String authToken)
             throws ResponseException {
+        int status = 0;
         try {
             URL url = (new URI(serverUrl + path)).toURL();
             HttpURLConnection http = (HttpURLConnection) url.openConnection();
@@ -72,11 +73,12 @@ public class ServerFacade {
 
             writeBody(request, http);
             http.connect();
+            status = http.getResponseCode();
             return readBody(http, responseClass);
         } catch (ResponseException ex) {
             throw ex;
         } catch (Exception ex) {
-            throw new ResponseException(500, ex.getMessage());
+            throw new ResponseException(status, ex.getMessage());
         }
     }
 
@@ -102,7 +104,9 @@ public class ServerFacade {
                         response = new Gson().fromJson(reader, responseClass);
                     }
                 } else {
-                    throw new Gson().fromJson(reader, ResponseException.class);
+                    ResponseException ex = new Gson().fromJson(reader, ResponseException.class);
+                    System.out.print(ex.toString());
+                    throw new ResponseException(status, ex.getMessage());
                 }
 
             }

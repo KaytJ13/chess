@@ -211,11 +211,10 @@ public class ChessClient {
             if (e.getStatusCode() == 403) {
                 // already taken (403)
                 throw new ResponseException(403, "Team already filled");
-            } else if (e.getStatusCode() == 400) {
+            } else {
                 // no game with id (400)
                 throw new ResponseException(400, "No game exists with that ID");
             }
-            throw new ResponseException(400, "Something happened . . .");
         } catch (Exception e) {
             throw new ResponseException(400, "Game ID must be a number");
         }
@@ -227,7 +226,19 @@ public class ChessClient {
         }
 
         try {
+            ListGamesResponse gamesList = facade.listGames(authToken);
             int gameID = Integer.parseInt(params[1]);
+            boolean found = false;
+
+            for (UserFriendlyGameData game : gamesList.games()) {
+                if (game.gameID() == gameID) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                throw new ResponseException(408, "No game with that Game ID");
+            }
 
             // find a way to access the ChessGame (probably write new method) and set currentGame
             // Until then:
@@ -237,6 +248,8 @@ public class ChessClient {
             replLoopNum = 3;
             return "Observing game " + gameID + "\n" + drawBoard(currentGame, ChessGame.TeamColor.WHITE);
             // just calls drawBoard from whatever team perspective rn. Will do more in phase 6
+        } catch (ResponseException e) {
+            throw e;
         } catch (Exception e) {
             throw new ResponseException(400, "Game ID must be a number");
         }
