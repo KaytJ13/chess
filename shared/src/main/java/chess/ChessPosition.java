@@ -66,7 +66,6 @@ public class ChessPosition implements Cloneable {
 
     public String drawSquare() {
         String SET_BG_COLOR_LIGHT_GREY = "\u001b" + "[48;5;" + "242m";
-        String SET_BG_COLOR_BLACK = "\u001b" + "[48;5;" + "0m";
         String SET_BG_COLOR_DARK_GREEN = "\u001b" + "[48;5;" + "22m";
         String SET_TEXT_COLOR_BLACK = "\u001b" + "[38;5;" + "0m";
         String SET_TEXT_COLOR_WHITE = "\u001b" + "[38;5;" + "15m";
@@ -94,14 +93,17 @@ public class ChessPosition implements Cloneable {
         if (piece == null) {
             square.append(EMPTY);
         } else if (piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
-            drawPiece(SET_TEXT_COLOR_WHITE, WHITE_KING, WHITE_QUEEN, WHITE_BISHOP, WHITE_KNIGHT, WHITE_ROOK, WHITE_PAWN, square);
+            drawPiece(SET_TEXT_COLOR_WHITE, WHITE_KING, WHITE_QUEEN, WHITE_BISHOP, WHITE_KNIGHT, WHITE_ROOK,
+                    WHITE_PAWN, square);
         } else {
-            drawPiece(SET_TEXT_COLOR_BLACK, BLACK_KING, BLACK_QUEEN, BLACK_BISHOP, BLACK_KNIGHT, BLACK_ROOK, BLACK_PAWN, square);
+            drawPiece(SET_TEXT_COLOR_BLACK, BLACK_KING, BLACK_QUEEN, BLACK_BISHOP, BLACK_KNIGHT, BLACK_ROOK,
+                    BLACK_PAWN, square);
         }
         return square.toString();
     }
 
-    private void drawPiece(String textColor, String kingText, String queenText, String bishopText, String knightText, String rookText, String pawnText, StringBuilder square) {
+    private void drawPiece(String textColor, String kingText, String queenText, String bishopText, String knightText,
+                           String rookText, String pawnText, StringBuilder square) {
         square.append(textColor);
         switch (piece.getPieceType()) {
             case KING -> square.append(kingText);

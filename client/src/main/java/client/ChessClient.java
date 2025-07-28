@@ -2,6 +2,7 @@ package client;
 
 import chess.ChessBoard;
 import chess.ChessGame;
+import chess.ChessPosition;
 import exception.ResponseException;
 import model.AuthData;
 import requests.*;
@@ -13,7 +14,6 @@ import static ui.EscapeSequences.*;
 
 public class ChessClient {
     private final ServerFacade facade;
-    private final String serverUrl;
     private int replLoopNum = 1; // 1 is logged out (Chess Login), 2 is logged in (Chess), 3 is in game (Chess Game)
     private String authToken = null;
     private String username = null;
@@ -21,8 +21,7 @@ public class ChessClient {
     private ChessGame.TeamColor team = null;
 
     public ChessClient(String url) {
-        serverUrl = url;
-        facade = new ServerFacade(serverUrl);
+        facade = new ServerFacade(url);
     }
 
     public void run() {
@@ -177,7 +176,7 @@ public class ChessClient {
             StringBuilder message = new StringBuilder();
             ListGamesResponse response = facade.listGames(authToken);
             for (UserFriendlyGameData game : response.games()) {
-                message.append(game.gameID()).append(". Name: ").append(game.gameName());
+                message.append("\n").append(game.gameID()).append(". Name: ").append(game.gameName());
                 message.append("   White team: ").append(game.whiteUsername());
                 message.append("   Black team: ").append(game.blackUsername()).append("\n");
             }
@@ -249,16 +248,50 @@ public class ChessClient {
 
         // but until phase 6, we'll just draw a starter board
         StringBuilder out = new StringBuilder();
-        char[] headers = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'};
-        int[] bookends = {1, 2, 3, 4, 5, 6, 7, 8};
         ChessBoard board = game.getBoard();
 
         if (team == ChessGame.TeamColor.WHITE) {
-            out.append(" WHITE PERSPECTIVE CHESS BOARD WILL GO HERE ");
+            for (int x = 9; x >= 0; x--) {
+                for (int y = 0; y <= 9; y++) {
+                    drawSquares(out, board, x, y);
+                }
+                out.append(RESET_BG_COLOR + "\n");
+            }
         } else {
-            out.append(" BLACK PERSPECTIVE CHESS BOARD WILL GO HERE ");
+            for (int x = 0; x <= 9; x++) {
+                for (int y = 9; y >= 0; y--) {
+                    drawSquares(out, board, x, y);
+                }
+                out.append(RESET_BG_COLOR + "\n");
+            }
         }
         return out.toString();
+    }
+
+    private void drawSquares(StringBuilder out, ChessBoard board, int x, int y) {
+        if (x == 9 || x == 0) {
+            out.append(drawHeaders(y));
+        } else if (y == 9 || y == 0) {
+            out.append(drawBookends(x));
+        } else {
+            out.append(board.getSquare(new ChessPosition(x, y)).drawSquare());
+        }
+    }
+
+    private String drawHeaders(int yPos) {
+        char[] headers = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'};
+        String out = SET_BG_COLOR_WHITE;
+        if (yPos == 0 || yPos == 9) {
+            out += SET_TEXT_COLOR_DARK_GREY + EMPTY;
+        } else {
+            out += SET_TEXT_COLOR_BLACK + " " + headers[yPos-1] + " ";
+        }
+        return out;
+    }
+
+    private String drawBookends(int xPos) {
+        int[] bookends = {0, 1, 2, 3, 4, 5, 6, 7, 8, 0};
+        return SET_BG_COLOR_WHITE + SET_TEXT_COLOR_BLACK + " " + bookends[xPos] + " ";
     }
 
     private String leave() { // A temporary method for testing purposes
