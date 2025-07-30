@@ -70,7 +70,7 @@ public class ChessClient {
             } else if (replLoopNum == 3) { // In Game
                 return switch (cmd) {
                     case "leave" -> leave();
-                    case "draw" -> drawBoard(currentGame, team);
+                    case "redraw" -> drawBoard(currentGame, team);
                     default -> help();
                 };
             } else { // Pre-login
@@ -101,8 +101,11 @@ public class ChessClient {
             return """
                     Valid commands:
                     help - View valid commands
-                    leave - Temporary exit command to leave game view
-                    other commands coming soon!""";
+                    redraw - Redraw the game board
+                    *leave - Leave game view
+                    *move <START POSITION> <END POSITION> - Moves a piece
+                    *resign - Forfeit the game
+                    *highlight <PIECE POSITION> - Highlights legal moves for a piece""";
         } else {
             return """
                     Valid commands:

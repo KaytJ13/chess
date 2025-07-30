@@ -14,7 +14,6 @@ public class Server {
     private final LoginHandler loginHandler;
     private final LogoutHandler logoutHandler;
     private final RegisterHandler registerHandler;
-    private final GetGameStateHandler getGameStateHandler;
 
     public Server() {
         UserDAO userDAO = new MySqlUserDAO();
@@ -31,7 +30,6 @@ public class Server {
         this.loginHandler = new LoginHandler(userService);
         this.logoutHandler = new LogoutHandler(userService);
         this.registerHandler = new RegisterHandler(userService);
-        this.getGameStateHandler = new GetGameStateHandler(gameService);
     }
 
     public int run(int desiredPort) {
@@ -47,7 +45,6 @@ public class Server {
         Spark.post("/game", this::createGame);
         Spark.get("/game", this::listGames);
         Spark.put("/game", this::joinGame);
-        Spark.get("/session", this::getGameState);
 
         //This line initializes the server and can be removed once you have a functioning endpoint 
         Spark.init();
@@ -152,15 +149,4 @@ public class Server {
         return "";
     }
 
-    private Object getGameState(Request req, Response res) {
-        try {
-            Object gameJson = getGameStateHandler.getGameState(req.body(), req.headers("authorization"));
-            res.status(200);
-            return gameJson;
-        } catch (ResponseException e) {
-            return exceptionHandler(e, res);
-        } catch (DataAccessException e) {
-            return exceptionHandler(new ResponseException(500, "Error: " + e.getMessage()), res);
-        }
-    }
 }
