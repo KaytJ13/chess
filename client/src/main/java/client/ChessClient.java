@@ -237,7 +237,7 @@ public class ChessClient {
                 }
             }
             if (!found) {
-                throw new ResponseException(408, "No game with that Game ID");
+                throw new ResponseException(400, "No game with that Game ID");
             }
 
             // find a way to access the ChessGame (probably write new method) and set currentGame
