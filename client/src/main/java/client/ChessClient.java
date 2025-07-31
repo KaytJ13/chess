@@ -107,14 +107,11 @@ public class ChessClient {
                     *move <START POSITION> <END POSITION> - Moves a piece
                     *resign - Forfeit the game
                     highlight <PIECE POSITION> - Highlights legal moves for a piece""";
-            // help, redraw, and highlight are local operations
             // leave, move, and resign communicate with the websocket
             // leave exits game view and sends a notification to everyone else
             // move sends an update to everyone, notifies them of the move, and redraws the board
             // resign ends gameplay, notifies everyone, and makes further moves impossible
-            // help is finished
-            // redraw is finished
-            // highlight is broken
+            // update observe and join so that they send messages and also so currentGame gets set to the right game
         } else {
             return """
                     Valid commands:
@@ -194,7 +191,6 @@ public class ChessClient {
             }
             return message.toString();
         } catch (ResponseException e) {
-//            throw e;
             throw new ResponseException(401, "Not logged in");
         }
     }
@@ -217,7 +213,7 @@ public class ChessClient {
             // find a way to access the ChessGame (probably write new method) and set currentGame
             // Until then:
             currentGame = new ChessGame();
-            currentGame.getBoard().resetBoard();
+//            currentGame.getBoard().resetBoard();
 
             return "Joined game " + gameID + "\n" + drawBoard(false, null);
         } catch (ResponseException e) {
@@ -256,7 +252,7 @@ public class ChessClient {
             // find a way to access the ChessGame (probably write new method) and set currentGame
             // Until then:
             currentGame = new ChessGame();
-            currentGame.getBoard().resetBoard();
+//            currentGame.getBoard().resetBoard();
             team = ChessGame.TeamColor.WHITE;
 
             replLoopNum = 3;
@@ -273,12 +269,7 @@ public class ChessClient {
         assert currentGame != null && team != null : "A ChessGame must be in progress";
         assert !highlight || startPosition != null;
 
-        Collection<ChessPosition> highlightedSquares;
-        if (highlight) {
-            highlightedSquares = highlightSquares(startPosition);
-        } else {
-            highlightedSquares = null;
-        }
+        Collection<ChessPosition> highlightedSquares = highlight ? highlightSquares(startPosition) : null;
 
         StringBuilder out = new StringBuilder();
         ChessBoard board = currentGame.getBoard();
@@ -366,23 +357,23 @@ public class ChessClient {
         char[] positioning = params[1].toCharArray();
 
         if (positioning.length < 2) {
-            throw new ResponseException(400, "Position must be <ROW><COLUMN>");
+            throw new ResponseException(400, "Position must be <COLUMN><ROW>");
         }
 
         try {
-            int x = positioning[1] - '0';
-            int y = validY[validX.indexOf(positioning[0])];
+            int row = positioning[1] - '0';
+            int column = validY[validX.indexOf(positioning[0])];
 
-            ChessPosition startPosition = new ChessPosition(x, y);
+            ChessPosition startPosition = new ChessPosition(row, column);
             return drawBoard(true, startPosition);
         } catch (Exception ex){
             throw new ResponseException(400, ex.getMessage());
         } catch (Throwable e) {
-            throw new ResponseException(400, "Row must be a letter a-h and column must be a number 1-8");
+            throw new ResponseException(400, "Column must be a letter a-h and row must be a number 1-8");
         }
     }
 
-    private String leave() { // A temporary method for testing purposes
+    private String leave() { // Still the Phase 5 version
         replLoopNum = 2;
         currentGame = null;
         team = null;
