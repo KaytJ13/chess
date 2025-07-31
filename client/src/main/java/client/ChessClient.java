@@ -70,7 +70,7 @@ public class ChessClient {
             } else if (replLoopNum == 3) { // In Game
                 return switch (cmd) {
                     case "leave" -> leave();
-                    case "redraw" -> drawBoard(currentGame, team);
+                    case "redraw" -> drawBoard();
                     default -> help();
                 };
             } else { // Pre-login
@@ -106,6 +106,15 @@ public class ChessClient {
                     *move <START POSITION> <END POSITION> - Moves a piece
                     *resign - Forfeit the game
                     *highlight <PIECE POSITION> - Highlights legal moves for a piece""";
+            // help, redraw, and highlight are local operations
+            // leave, move, and resign communicate with the websocket
+            // leave exits game view and sends a notification to everyone else
+            // move sends an update to everyone, notifies them of the move, and redraws the board
+            // resign ends gameplay, notifies everyone, and makes further moves impossible
+            // help is finished
+            // redraw is finished
+            // highlight will need to take the possible moves
+                // and basically run redraw but with the squares in the moves highlighted
         } else {
             return """
                     Valid commands:
@@ -185,6 +194,7 @@ public class ChessClient {
             }
             return message.toString();
         } catch (ResponseException e) {
+//            throw e;
             throw new ResponseException(401, "Not logged in");
         }
     }
@@ -209,7 +219,7 @@ public class ChessClient {
             currentGame = new ChessGame();
             currentGame.getBoard().resetBoard();
 
-            return "Joined game " + gameID + "\n" + drawBoard(currentGame, color);
+            return "Joined game " + gameID + "\n" + drawBoard();
         } catch (ResponseException e) {
             if (e.getStatusCode() == 403) {
                 // already taken (403)
@@ -247,9 +257,10 @@ public class ChessClient {
             // Until then:
             currentGame = new ChessGame();
             currentGame.getBoard().resetBoard();
+            team = ChessGame.TeamColor.WHITE;
 
             replLoopNum = 3;
-            return "Observing game " + gameID + "\n" + drawBoard(currentGame, ChessGame.TeamColor.WHITE);
+            return "Observing game " + gameID + "\n" + drawBoard();
             // just calls drawBoard from whatever team perspective rn. Will do more in phase 6
         } catch (ResponseException e) {
             throw e;
@@ -258,9 +269,10 @@ public class ChessClient {
         }
     }
 
-    private String drawBoard(ChessGame game, ChessGame.TeamColor team) {
-        assert game != null && team != null : "A ChessGame must be in progress";
+    private String drawBoard() {
+        assert currentGame != null && team != null : "A ChessGame must be in progress";
         // use the current game variable to access the board and draw it
+        ChessGame game = currentGame;
 
         // but until phase 6, we'll just draw a starter board
         StringBuilder out = new StringBuilder();
