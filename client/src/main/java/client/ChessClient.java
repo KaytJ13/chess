@@ -114,8 +114,7 @@ public class ChessClient {
             // resign ends gameplay, notifies everyone, and makes further moves impossible
             // help is finished
             // redraw is finished
-            // highlight will need to take the possible moves
-                // and basically run redraw but with the squares in the moves highlighted
+            // highlight is broken
         } else {
             return """
                     Valid commands:
@@ -273,10 +272,9 @@ public class ChessClient {
     private String drawBoard(boolean highlight, ChessPosition startPosition) {
         assert currentGame != null && team != null : "A ChessGame must be in progress";
         assert !highlight || startPosition != null;
-        // use the current game variable to access the board and draw it
+
         Collection<ChessPosition> highlightedSquares;
         if (highlight) {
-            System.out.print("DEBUG: highlight = true\n");
             highlightedSquares = highlightSquares(startPosition);
         } else {
             highlightedSquares = null;
@@ -304,9 +302,13 @@ public class ChessClient {
     }
 
     private Collection<ChessPosition> highlightSquares(ChessPosition startPosition) {
-        Collection<ChessMove> validMoves = currentGame.validMoves(new ChessPosition(1, 1));
-        System.out.print("DEBUG: validMoves = " + validMoves.toString() + "\n");
-        // VALID MOVES ISN'T RETURNING ANYTHING
+        Collection<ChessMove> validMoves = currentGame.validMoves(new ChessPosition(startPosition.getRow(),
+                startPosition.getColumn()));
+
+        if (validMoves == null) {
+            return null;
+        }
+
         Collection<ChessPosition> highlightedSquares = new HashSet<>();
         for (ChessMove move : validMoves) {
             if (move.getStartPosition().getRow() == startPosition.getRow() &&
@@ -321,16 +323,13 @@ public class ChessClient {
                              Collection<ChessPosition> highlightedSquares) {
         boolean validMove = false;
         if (highlightedSquares != null) {
-            System.out.print("DEBUG: highlightedSquares = " + highlightedSquares.toString() + "\n");
             for (ChessPosition position : highlightedSquares) {
-                System.out.print("DEBUG: position is (" + position.getRow() + ", " + position.getColumn() + ")" + "\n");
                 if (position.getRow() == x && position.getColumn() == y) {
                     validMove = true;
                     break;
                 }
             }
         }
-        System.out.print("DEBUG: validSquare for (" + x + ", " + y + ") is " + validMove + "\n");
 
         if (x == 9 || x == 0) {
             out.append(drawHeaders(y));
@@ -361,17 +360,23 @@ public class ChessClient {
         if (params.length < 2) {
             throw new ResponseException(400, "Missing position");
         }
+
         int[] validY = {1, 2, 3, 4, 5, 6, 7, 8};
         String validX = "abcdefgh";
         char[] positioning = params[1].toCharArray();
+
         if (positioning.length < 2) {
             throw new ResponseException(400, "Position must be <ROW><COLUMN>");
         }
+
         try {
-            int y = positioning[1];
-            int x = validY[validX.indexOf(positioning[0])];
+            int x = positioning[1] - '0';
+            int y = validY[validX.indexOf(positioning[0])];
+
             ChessPosition startPosition = new ChessPosition(x, y);
             return drawBoard(true, startPosition);
+        } catch (Exception ex){
+            throw new ResponseException(400, ex.getMessage());
         } catch (Throwable e) {
             throw new ResponseException(400, "Row must be a letter a-h and column must be a number 1-8");
         }
@@ -382,5 +387,9 @@ public class ChessClient {
         currentGame = null;
         team = null;
         return "Game view exited\n";
+    }
+
+    public void updateGame(ChessGame game) {
+        currentGame = game;
     }
 }
