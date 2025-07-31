@@ -64,9 +64,11 @@ public class ChessPosition implements Cloneable {
         this.piece = piece;
     }
 
-    public String drawSquare() {
+    public String drawSquare(boolean highlight) {
         String bgLightGrey = "\u001b" + "[48;5;" + "242m";
         String bgDarkGreen = "\u001b" + "[48;5;" + "22m";
+        String bgLightYellow;
+        String bgYellow = "\u001b" + "[48;5;" + "226m";
         String textBlack = "\u001b" + "[38;5;" + "0m";
         String textWhite = "\u001b" + "[38;5;" + "15m";
 
@@ -85,7 +87,9 @@ public class ChessPosition implements Cloneable {
         String empty = " \u2003 ";
 
         StringBuilder square = new StringBuilder();
-        if (color == PositionColor.WHITE) {
+        if (highlight) {
+            square.append(bgYellow);
+        } else if (color == PositionColor.WHITE) {
             square.append(bgLightGrey);
         } else {
             square.append(bgDarkGreen);

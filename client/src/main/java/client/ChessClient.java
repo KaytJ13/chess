@@ -1,13 +1,13 @@
 package client;
 
-import chess.ChessBoard;
-import chess.ChessGame;
-import chess.ChessPosition;
+import chess.*;
 import exception.ResponseException;
 import model.AuthData;
 import requests.*;
 import serverfacade.ServerFacade;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Scanner;
 import static ui.EscapeSequences.*;
 
@@ -70,7 +70,8 @@ public class ChessClient {
             } else if (replLoopNum == 3) { // In Game
                 return switch (cmd) {
                     case "leave" -> leave();
-                    case "redraw" -> drawBoard();
+                    case "redraw" -> drawBoard(false, null);
+                    case "highlight" -> highlight(tokens);
                     default -> help();
                 };
             } else { // Pre-login
@@ -105,7 +106,7 @@ public class ChessClient {
                     *leave - Leave game view
                     *move <START POSITION> <END POSITION> - Moves a piece
                     *resign - Forfeit the game
-                    *highlight <PIECE POSITION> - Highlights legal moves for a piece""";
+                    highlight <PIECE POSITION> - Highlights legal moves for a piece""";
             // help, redraw, and highlight are local operations
             // leave, move, and resign communicate with the websocket
             // leave exits game view and sends a notification to everyone else
@@ -219,7 +220,7 @@ public class ChessClient {
             currentGame = new ChessGame();
             currentGame.getBoard().resetBoard();
 
-            return "Joined game " + gameID + "\n" + drawBoard();
+            return "Joined game " + gameID + "\n" + drawBoard(false, null);
         } catch (ResponseException e) {
             if (e.getStatusCode() == 403) {
                 // already taken (403)
@@ -260,7 +261,7 @@ public class ChessClient {
             team = ChessGame.TeamColor.WHITE;
 
             replLoopNum = 3;
-            return "Observing game " + gameID + "\n" + drawBoard();
+            return "Observing game " + gameID + "\n" + drawBoard(false, null);
             // just calls drawBoard from whatever team perspective rn. Will do more in phase 6
         } catch (ResponseException e) {
             throw e;
@@ -269,10 +270,12 @@ public class ChessClient {
         }
     }
 
-    private String drawBoard() {
+    private String drawBoard(boolean highlight, ChessPosition startPosition) {
         assert currentGame != null && team != null : "A ChessGame must be in progress";
+        assert !highlight || startPosition != null;
         // use the current game variable to access the board and draw it
         ChessGame game = currentGame;
+        Collection<ChessPosition> highlightedSquares = highlightSquares(startPosition);
 
         // but until phase 6, we'll just draw a starter board
         StringBuilder out = new StringBuilder();
@@ -281,14 +284,26 @@ public class ChessClient {
         if (team == ChessGame.TeamColor.WHITE) {
             for (int x = 9; x >= 0; x--) {
                 for (int y = 0; y <= 9; y++) {
-                    drawSquares(out, board, x, y);
+                    if (highlight) {
+                        if (highlightedSquares.contains(new ChessPosition(x, y))) {
+                            drawSquares(out, board, x, y, true);
+                        }
+                    } else {
+                        drawSquares(out, board, x, y, false);
+                    }
                 }
                 out.append(RESET_BG_COLOR + "\n");
             }
         } else {
             for (int x = 0; x <= 9; x++) {
                 for (int y = 9; y >= 0; y--) {
-                    drawSquares(out, board, x, y);
+                    if (highlight) {
+                        if (highlightedSquares.contains(new ChessPosition(x, y))) {
+                            drawSquares(out, board, x, y, true);
+                        }
+                    } else {
+                        drawSquares(out, board, x, y, false);
+                    }
                 }
                 out.append(RESET_BG_COLOR + "\n");
             }
@@ -296,13 +311,24 @@ public class ChessClient {
         return out.toString();
     }
 
-    private void drawSquares(StringBuilder out, ChessBoard board, int x, int y) {
+    private Collection<ChessPosition> highlightSquares(ChessPosition startPosition) {
+        Collection<ChessMove> validMoves = currentGame.validMoves(new ChessPosition(1, 1));
+        Collection<ChessPosition> highlightedSquares = new HashSet<>();
+        for (ChessMove move : validMoves) {
+            if (move.getStartPosition() == startPosition) {
+                highlightedSquares.add(move.getEndPosition());
+            }
+        }
+        return highlightedSquares;
+    }
+
+    private void drawSquares(StringBuilder out, ChessBoard board, int x, int y, boolean highlight) {
         if (x == 9 || x == 0) {
             out.append(drawHeaders(y));
         } else if (y == 9 || y == 0) {
             out.append(drawBookends(x));
         } else {
-            out.append(board.getSquare(new ChessPosition(x, y)).drawSquare());
+            out.append(board.getSquare(new ChessPosition(x, y)).drawSquare(highlight));
         }
     }
 
@@ -320,6 +346,26 @@ public class ChessClient {
     private String drawBookends(int xPos) {
         int[] bookends = {0, 1, 2, 3, 4, 5, 6, 7, 8, 0};
         return SET_BG_COLOR_WHITE + SET_TEXT_COLOR_BLACK + " " + bookends[xPos] + " ";
+    }
+
+    private String highlight(String[] params) throws ResponseException {
+        if (params.length < 2) {
+            throw new ResponseException(400, "Missing position");
+        }
+        int[] validY = {1, 2, 3, 4, 5, 6, 7, 8};
+        String validX = "abcdefgh";
+        char[] positioning = params[1].toCharArray();
+        if (positioning.length < 2) {
+            throw new ResponseException(400, "Position must be <ROW><COLUMN>");
+        }
+        try {
+            int y = positioning[1];
+            int x = validY[validX.indexOf(positioning[0])];
+            ChessPosition startPosition = new ChessPosition(x, y);
+            return drawBoard(true, startPosition);
+        } catch (Throwable e) {
+            throw new ResponseException(400, "Row must be a letter a-h and column must be a number 1-8");
+        }
     }
 
     private String leave() { // A temporary method for testing purposes
