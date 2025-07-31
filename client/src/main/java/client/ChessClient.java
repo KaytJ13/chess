@@ -274,36 +274,28 @@ public class ChessClient {
         assert currentGame != null && team != null : "A ChessGame must be in progress";
         assert !highlight || startPosition != null;
         // use the current game variable to access the board and draw it
-        ChessGame game = currentGame;
-        Collection<ChessPosition> highlightedSquares = highlightSquares(startPosition);
+        Collection<ChessPosition> highlightedSquares;
+        if (highlight) {
+            System.out.print("DEBUG: highlight = true\n");
+            highlightedSquares = highlightSquares(startPosition);
+        } else {
+            highlightedSquares = null;
+        }
 
-        // but until phase 6, we'll just draw a starter board
         StringBuilder out = new StringBuilder();
-        ChessBoard board = game.getBoard();
+        ChessBoard board = currentGame.getBoard();
 
         if (team == ChessGame.TeamColor.WHITE) {
             for (int x = 9; x >= 0; x--) {
                 for (int y = 0; y <= 9; y++) {
-                    if (highlight) {
-                        if (highlightedSquares.contains(new ChessPosition(x, y))) {
-                            drawSquares(out, board, x, y, true);
-                        }
-                    } else {
-                        drawSquares(out, board, x, y, false);
-                    }
+                    drawSquares(out, board, x, y, highlightedSquares);
                 }
                 out.append(RESET_BG_COLOR + "\n");
             }
         } else {
             for (int x = 0; x <= 9; x++) {
                 for (int y = 9; y >= 0; y--) {
-                    if (highlight) {
-                        if (highlightedSquares.contains(new ChessPosition(x, y))) {
-                            drawSquares(out, board, x, y, true);
-                        }
-                    } else {
-                        drawSquares(out, board, x, y, false);
-                    }
+                    drawSquares(out, board, x, y, highlightedSquares);
                 }
                 out.append(RESET_BG_COLOR + "\n");
             }
@@ -313,22 +305,39 @@ public class ChessClient {
 
     private Collection<ChessPosition> highlightSquares(ChessPosition startPosition) {
         Collection<ChessMove> validMoves = currentGame.validMoves(new ChessPosition(1, 1));
+        System.out.print("DEBUG: validMoves = " + validMoves.toString() + "\n");
+        // VALID MOVES ISN'T RETURNING ANYTHING
         Collection<ChessPosition> highlightedSquares = new HashSet<>();
         for (ChessMove move : validMoves) {
-            if (move.getStartPosition() == startPosition) {
+            if (move.getStartPosition().getRow() == startPosition.getRow() &&
+                    move.getStartPosition().getColumn() == startPosition.getColumn()) {
                 highlightedSquares.add(move.getEndPosition());
             }
         }
         return highlightedSquares;
     }
 
-    private void drawSquares(StringBuilder out, ChessBoard board, int x, int y, boolean highlight) {
+    private void drawSquares(StringBuilder out, ChessBoard board, int x, int y,
+                             Collection<ChessPosition> highlightedSquares) {
+        boolean validMove = false;
+        if (highlightedSquares != null) {
+            System.out.print("DEBUG: highlightedSquares = " + highlightedSquares.toString() + "\n");
+            for (ChessPosition position : highlightedSquares) {
+                System.out.print("DEBUG: position is (" + position.getRow() + ", " + position.getColumn() + ")" + "\n");
+                if (position.getRow() == x && position.getColumn() == y) {
+                    validMove = true;
+                    break;
+                }
+            }
+        }
+        System.out.print("DEBUG: validSquare for (" + x + ", " + y + ") is " + validMove + "\n");
+
         if (x == 9 || x == 0) {
             out.append(drawHeaders(y));
         } else if (y == 9 || y == 0) {
             out.append(drawBookends(x));
         } else {
-            out.append(board.getSquare(new ChessPosition(x, y)).drawSquare(highlight));
+            out.append(board.getSquare(new ChessPosition(x, y)).drawSquare(validMove));
         }
     }
 

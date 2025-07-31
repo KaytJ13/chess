@@ -67,8 +67,8 @@ public class ChessPosition implements Cloneable {
     public String drawSquare(boolean highlight) {
         String bgLightGrey = "\u001b" + "[48;5;" + "242m";
         String bgDarkGreen = "\u001b" + "[48;5;" + "22m";
-        String bgLightYellow;
         String bgYellow = "\u001b" + "[48;5;" + "226m";
+        String bgBlue= "\u001b" + "[48;5;" + "12m";
         String textBlack = "\u001b" + "[38;5;" + "0m";
         String textWhite = "\u001b" + "[38;5;" + "15m";
 
@@ -87,13 +87,16 @@ public class ChessPosition implements Cloneable {
         String empty = " \u2003 ";
 
         StringBuilder square = new StringBuilder();
-        if (highlight) {
+        if (highlight && color == PositionColor.WHITE) {
             square.append(bgYellow);
+        } else if (highlight && color == PositionColor.BLACK) {
+            square.append(bgBlue);
         } else if (color == PositionColor.WHITE) {
             square.append(bgLightGrey);
         } else {
             square.append(bgDarkGreen);
         }
+
         if (piece == null) {
             square.append(empty);
         } else if (piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
@@ -103,6 +106,7 @@ public class ChessPosition implements Cloneable {
             drawPiece(textBlack, blackKing, blackQueen, blackBishop, blackKnight, blackRook,
                     blackPawn, square);
         }
+        square.append("\u001b" + "[49m");
         return square.toString();
     }
 
@@ -116,6 +120,7 @@ public class ChessPosition implements Cloneable {
             case BISHOP -> square.append(bishopText);
             case KNIGHT -> square.append(knightText);
             case PAWN -> square.append(pawnText);
+            default -> square.append(" \u2003 ");
         }
     }
 
