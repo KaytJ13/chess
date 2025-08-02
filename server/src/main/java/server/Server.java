@@ -3,6 +3,7 @@ package server;
 import dataaccess.*;
 import exception.ResponseException;
 import handlers.*;
+import server.websocket.WebSocketHandler;
 import services.*;
 import spark.*;
 
@@ -14,6 +15,7 @@ public class Server {
     private final LoginHandler loginHandler;
     private final LogoutHandler logoutHandler;
     private final RegisterHandler registerHandler;
+    private final WebSocketHandler webSocketHandler;
 
     public Server() {
         UserDAO userDAO = new MySqlUserDAO();
@@ -30,12 +32,16 @@ public class Server {
         this.loginHandler = new LoginHandler(userService);
         this.logoutHandler = new LogoutHandler(userService);
         this.registerHandler = new RegisterHandler(userService);
+
+        this.webSocketHandler = new WebSocketHandler();
     }
 
     public int run(int desiredPort) {
         Spark.port(desiredPort);
 
         Spark.staticFiles.location("web");
+
+        Spark.webSocket("/ws", webSocketHandler);
 
         // Register your endpoints and handle exceptions here.
         Spark.delete("/db", this::clear);

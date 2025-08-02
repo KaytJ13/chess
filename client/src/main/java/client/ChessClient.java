@@ -1,10 +1,16 @@
 package client;
 
 import chess.*;
+import client.websocket.NotificationHandler;
+import client.websocket.WebSocketFacade;
 import exception.ResponseException;
 import model.AuthData;
 import requests.*;
 import serverfacade.ServerFacade;
+import websocket.messages.ErrorMessage;
+import websocket.messages.LoadGameMessage;
+import websocket.messages.NotificationMessage;
+import websocket.messages.ServerMessage;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -12,15 +18,18 @@ import java.util.Scanner;
 import static ui.EscapeSequences.*;
 
 
-public class ChessClient {
+public class ChessClient implements NotificationHandler {
     private final ServerFacade facade;
     private int replLoopNum = 1; // 1 is logged out (Chess Login), 2 is logged in (Chess), 3 is in game (Chess Game)
     private String authToken = null;
     private String username = null;
     private ChessGame currentGame = null;
     private ChessGame.TeamColor team = null;
+    private String serverUrl;
+    private WebSocketFacade ws;
 
     public ChessClient(String url) {
+        serverUrl = url;
         facade = new ServerFacade(url);
     }
 
@@ -210,12 +219,14 @@ public class ChessClient {
 
             replLoopNum = 3;
             team = color;
-            // find a way to access the ChessGame (probably write new method) and set currentGame
-            // Until then:
+            //Delete this line once the ws is working right
             currentGame = new ChessGame();
-//            currentGame.getBoard().resetBoard();
+
+            ws = new WebSocketFacade(serverUrl, this);
+            ws.sendConnect(authToken, gameID, username, color);
 
             return "Joined game " + gameID + "\n" + drawBoard(false, null);
+
         } catch (ResponseException e) {
             if (e.getStatusCode() == 403) {
                 // already taken (403)
@@ -249,13 +260,14 @@ public class ChessClient {
                 throw new ResponseException(400, "No game with that Game ID");
             }
 
-            // find a way to access the ChessGame (probably write new method) and set currentGame
-            // Until then:
-            currentGame = new ChessGame();
-//            currentGame.getBoard().resetBoard();
-            team = ChessGame.TeamColor.WHITE;
-
+            team = ChessGame.TeamColor.WHITE; // This is purely for drawing the board
             replLoopNum = 3;
+            //Delete this line once the ws is working right
+            currentGame = new ChessGame();
+
+            ws = new WebSocketFacade(serverUrl, this);
+            ws.sendConnect(authToken, gameID, username, null);
+
             return "Observing game " + gameID + "\n" + drawBoard(false, null);
             // just calls drawBoard from whatever team perspective rn. Will do more in phase 6
         } catch (ResponseException e) {
@@ -382,5 +394,16 @@ public class ChessClient {
 
     public void updateGame(ChessGame game) {
         currentGame = game;
+    }
+
+    public void notify(ServerMessage notification) {
+        if (notification.getServerMessageType() == ServerMessage.ServerMessageType.NOTIFICATION) {
+            System.out.print(SET_TEXT_COLOR_BLUE + ((NotificationMessage) notification).getMessage() + "\n");
+        } else if (notification.getServerMessageType() == ServerMessage.ServerMessageType.ERROR) {
+            System.out.print(SET_TEXT_COLOR_BLUE + ((ErrorMessage) notification).getErrorMessage() + "\n");
+        } else if (notification.getServerMessageType() == ServerMessage.ServerMessageType.LOAD_GAME) {
+            currentGame = ((LoadGameMessage) notification).getGame();
+            drawBoard(false, null);
+        }
     }
 }
