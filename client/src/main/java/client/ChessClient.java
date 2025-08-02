@@ -262,11 +262,10 @@ public class ChessClient implements NotificationHandler {
 
             team = ChessGame.TeamColor.WHITE; // This is purely for drawing the board
             replLoopNum = 3;
-            //Delete this line once the ws is working right
-            currentGame = new ChessGame();
 
             ws = new WebSocketFacade(serverUrl, this);
             ws.sendConnect(authToken, gameID, username, null);
+            //Not finding current game and not updating
 
             return "Observing game " + gameID + "\n" + drawBoard(false, null);
             // just calls drawBoard from whatever team perspective rn. Will do more in phase 6

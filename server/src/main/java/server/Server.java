@@ -33,7 +33,7 @@ public class Server {
         this.logoutHandler = new LogoutHandler(userService);
         this.registerHandler = new RegisterHandler(userService);
 
-        this.webSocketHandler = new WebSocketHandler();
+        this.webSocketHandler = new WebSocketHandler(gameDAO);
     }
 
     public int run(int desiredPort) {

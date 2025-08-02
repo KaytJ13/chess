@@ -11,4 +11,12 @@ public class ConnectCommand extends UserGameCommand {
         this.username = username;
         this.color = color;
     }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public ChessGame.TeamColor getColor() {
+        return color;
+    }
 }
