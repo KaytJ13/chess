@@ -11,4 +11,9 @@ public class ErrorMessage extends ServerMessage {
     public String getErrorMessage() {
         return errorMessage;
     }
+
+    @Override
+    public String toString() {
+        return "Error: " + errorMessage + '\n';
+    }
 }
