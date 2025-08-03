@@ -2,10 +2,13 @@ package client.websocket;
 
 import chess.ChessGame;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import exception.ResponseException;
+import websocket.commands.CommandTypeAdapter;
 import websocket.commands.ConnectCommand;
 import websocket.commands.UserGameCommand;
-import websocket.messages.ServerMessage;
+import websocket.messages.*;
 
 import javax.websocket.*;
 import java.io.IOException;
@@ -23,6 +26,8 @@ public class WebSocketFacade extends Endpoint {
             URI socketURI = new URI(url + "/ws");
             this.notificationHandler = notificationHandler;
 
+//            System.out.print("DEBUG: notification handler (WSFacade) = " + notificationHandler + "\n");
+
             WebSocketContainer container = ContainerProvider.getWebSocketContainer();
             this.session = container.connectToServer(this, socketURI);
 
@@ -30,7 +35,11 @@ public class WebSocketFacade extends Endpoint {
             this.session.addMessageHandler(new MessageHandler.Whole<String>() {
                 @Override
                 public void onMessage(String message) {
-                    ServerMessage notification = new Gson().fromJson(message, ServerMessage.class);
+                    GsonBuilder builder = new GsonBuilder();
+                    builder.registerTypeAdapter(ServerMessage.class, new ServerMessageTypeAdapter());
+                    Gson gson = builder.create();
+
+                    ServerMessage notification = gson.fromJson(message, ServerMessage.class);
                     notificationHandler.notify(notification);
                 }
             });
@@ -47,16 +56,27 @@ public class WebSocketFacade extends Endpoint {
     public void sendConnect(String authToken, int gameID, String username, ChessGame.TeamColor color)
             throws ResponseException {
         try {
+            GsonBuilder builder = new GsonBuilder();
+            builder.registerTypeAdapter(UserGameCommand.class, new CommandTypeAdapter());
+            Gson gson = builder.create();
+
             ConnectCommand command = new ConnectCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID,
                     username, color);
-            this.session.getBasicRemote().sendText(new Gson().toJson(command));
+            this.session.getBasicRemote().sendText(gson.toJson(command));
+
+//            System.out.print("DEBUG: sent connect through notification handler (" + notificationHandler + ")\n");
         } catch (IOException e) {
             throw new ResponseException(500, e.getMessage());
         }
     }
 
     // Make Move
+
     // Leave
+    public void sendLeave(String authToken, int gameID, String username) {
+        // This doesn't work yet, obviously
+    }
+
     // Resign
 
 }

@@ -6,8 +6,8 @@ import com.google.gson.Gson;
 public class LoadGameMessage extends ServerMessage {
     private final ChessGame game;
 
-    public LoadGameMessage(ServerMessageType type, ChessGame game) {
-        super(type);
+    public LoadGameMessage(ServerMessageType serverMessageType, ChessGame game) {
+        super(serverMessageType);
         this.game = game;
     }
 

@@ -25,8 +25,9 @@ public class ChessClient implements NotificationHandler {
     private String username = null;
     private ChessGame currentGame = null;
     private ChessGame.TeamColor team = null;
-    private String serverUrl;
+    private final String serverUrl;
     private WebSocketFacade ws;
+    private int currentGameID;
 
     public ChessClient(String url) {
         serverUrl = url;
@@ -219,13 +220,12 @@ public class ChessClient implements NotificationHandler {
 
             replLoopNum = 3;
             team = color;
-            //Delete this line once the ws is working right
-            currentGame = new ChessGame();
+            currentGameID = gameID;
 
             ws = new WebSocketFacade(serverUrl, this);
             ws.sendConnect(authToken, gameID, username, color);
 
-            return "Joined game " + gameID + "\n" + drawBoard(false, null);
+            return "Joined game " + gameID + "\n";
 
         } catch (ResponseException e) {
             if (e.getStatusCode() == 403) {
@@ -262,13 +262,13 @@ public class ChessClient implements NotificationHandler {
 
             team = ChessGame.TeamColor.WHITE; // This is purely for drawing the board
             replLoopNum = 3;
+            currentGameID = gameID;
 
             ws = new WebSocketFacade(serverUrl, this);
             ws.sendConnect(authToken, gameID, username, null);
             //Not finding current game and not updating
 
-            return "Observing game " + gameID + "\n" + drawBoard(false, null);
-            // just calls drawBoard from whatever team perspective rn. Will do more in phase 6
+            return "Observing game " + gameID + "\n";
         } catch (ResponseException e) {
             throw e;
         } catch (Exception e) {
@@ -385,9 +385,13 @@ public class ChessClient implements NotificationHandler {
     }
 
     private String leave() { // Still the Phase 5 version
+        ws.sendLeave(authToken, currentGameID, username);
+
         replLoopNum = 2;
         currentGame = null;
         team = null;
+        currentGameID = 0;
+
         return "Game view exited\n";
     }
 
@@ -396,13 +400,15 @@ public class ChessClient implements NotificationHandler {
     }
 
     public void notify(ServerMessage notification) {
+//        System.out.print(SET_TEXT_COLOR_BLUE + "DEBUG: caught a notification in notify: " + notification + "\n");
         if (notification.getServerMessageType() == ServerMessage.ServerMessageType.NOTIFICATION) {
             System.out.print(SET_TEXT_COLOR_BLUE + ((NotificationMessage) notification).getMessage() + "\n");
         } else if (notification.getServerMessageType() == ServerMessage.ServerMessageType.ERROR) {
             System.out.print(SET_TEXT_COLOR_BLUE + ((ErrorMessage) notification).getErrorMessage() + "\n");
         } else if (notification.getServerMessageType() == ServerMessage.ServerMessageType.LOAD_GAME) {
-            currentGame = ((LoadGameMessage) notification).getGame();
-            drawBoard(false, null);
+            updateGame(((LoadGameMessage) notification).getGame());
+//            System.out.print(SET_TEXT_COLOR_BLUE + "DEBUG: current game reset = " + (currentGame != null) + "\n");
+            System.out.print(SET_TEXT_COLOR_BLUE + drawBoard(false, null) + "\n");
         }
     }
 }
