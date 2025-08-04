@@ -40,7 +40,7 @@ public class ServerMessageTypeAdapter extends TypeAdapter<ServerMessage> {
                 case "game" -> game = new Gson().getAdapter(ChessGame.class).read(jsonReader);
             }
         }
-        System.out.print("DEBUG: parsed game as " + game + "\n");
+//        System.out.print("DEBUG: parsed game as " + game + "\n");
 
         jsonReader.endObject();
 

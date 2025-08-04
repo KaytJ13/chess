@@ -16,6 +16,7 @@ import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 
 import websocket.commands.CommandTypeAdapter;
 import websocket.commands.ConnectCommand;
+import websocket.commands.LeaveCommand;
 import websocket.commands.UserGameCommand;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
@@ -42,7 +43,7 @@ public class WebSocketHandler {
         UserGameCommand command = gson.fromJson(message, UserGameCommand.class);
         switch (command.getCommandType()) {
             case CONNECT -> connect(((ConnectCommand) command), session);
-            case LEAVE -> leave();
+            case LEAVE -> leave(((LeaveCommand) command), session);
             case RESIGN -> resign();
             case MAKE_MOVE -> makeMove();
         }
@@ -51,11 +52,8 @@ public class WebSocketHandler {
     public void connect(ConnectCommand command, Session session) throws IOException, ResponseException {
         connections.add(command.getUsername(), session);
 
-//        System.out.print("DEBUG: entered connect\n");
-
         try {
             GameData gameData = gameDAO.getGame(command.getGameID());
-//            System.out.print("DEBUG: grabbed the game = " + gameData + "\n");
             var loadGame = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameData.game());
             connections.broadcast("", loadGame);
         } catch (DataAccessException e) {
@@ -74,8 +72,11 @@ public class WebSocketHandler {
 
     }
 
-    public void leave() {
-
+    public void leave(LeaveCommand command, Session session) throws IOException {
+        connections.remove(command.getUsername());
+        String message = command.getUsername() + " left the game";
+        var notification = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
+        connections.broadcast(command.getUsername(), notification);
     }
 
     public void resign() {

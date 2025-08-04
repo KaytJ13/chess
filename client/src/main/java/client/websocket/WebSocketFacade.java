@@ -7,6 +7,7 @@ import com.google.gson.GsonBuilder;
 import exception.ResponseException;
 import websocket.commands.CommandTypeAdapter;
 import websocket.commands.ConnectCommand;
+import websocket.commands.LeaveCommand;
 import websocket.commands.UserGameCommand;
 import websocket.messages.*;
 
@@ -19,6 +20,7 @@ public class WebSocketFacade extends Endpoint {
 
     private NotificationHandler notificationHandler;
     private Session session;
+    private final Gson gson;
 
     public WebSocketFacade(String url, NotificationHandler notificationHandler) throws ResponseException {
         try {
@@ -30,6 +32,11 @@ public class WebSocketFacade extends Endpoint {
 
             WebSocketContainer container = ContainerProvider.getWebSocketContainer();
             this.session = container.connectToServer(this, socketURI);
+
+            //Register type adapter
+            GsonBuilder builder = new GsonBuilder();
+            builder.registerTypeAdapter(UserGameCommand.class, new CommandTypeAdapter());
+            gson = builder.create();
 
             //set message handler
             this.session.addMessageHandler(new MessageHandler.Whole<String>() {
@@ -56,10 +63,6 @@ public class WebSocketFacade extends Endpoint {
     public void sendConnect(String authToken, int gameID, String username, ChessGame.TeamColor color)
             throws ResponseException {
         try {
-            GsonBuilder builder = new GsonBuilder();
-            builder.registerTypeAdapter(UserGameCommand.class, new CommandTypeAdapter());
-            Gson gson = builder.create();
-
             ConnectCommand command = new ConnectCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID,
                     username, color);
             this.session.getBasicRemote().sendText(gson.toJson(command));
@@ -73,8 +76,15 @@ public class WebSocketFacade extends Endpoint {
     // Make Move
 
     // Leave
-    public void sendLeave(String authToken, int gameID, String username) {
+    public void sendLeave(String authToken, int gameID, String username) throws ResponseException {
         // This doesn't work yet, obviously
+        try {
+            LeaveCommand command = new LeaveCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID, username);
+            this.session.getBasicRemote().sendText(gson.toJson(command));
+            this.session.close();
+        } catch (IOException e) {
+            throw new ResponseException(500, e.getMessage());
+        }
     }
 
     // Resign

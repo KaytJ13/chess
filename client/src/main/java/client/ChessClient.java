@@ -384,7 +384,7 @@ public class ChessClient implements NotificationHandler {
         }
     }
 
-    private String leave() { // Still the Phase 5 version
+    private String leave() throws ResponseException { // Still the Phase 5 version
         ws.sendLeave(authToken, currentGameID, username);
 
         replLoopNum = 2;
@@ -410,5 +410,6 @@ public class ChessClient implements NotificationHandler {
 //            System.out.print(SET_TEXT_COLOR_BLUE + "DEBUG: current game reset = " + (currentGame != null) + "\n");
             System.out.print(SET_TEXT_COLOR_BLUE + drawBoard(false, null) + "\n");
         }
+        System.out.print("\n" + SET_TEXT_COLOR_LIGHT_GREY + "Chess Game >>> " + SET_TEXT_COLOR_BLUE);
     }
 }

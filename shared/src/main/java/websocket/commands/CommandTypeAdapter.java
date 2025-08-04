@@ -18,7 +18,7 @@ public class CommandTypeAdapter extends TypeAdapter<UserGameCommand> {
             case MAKE_MOVE -> gson.getAdapter(MakeMoveCommand.class).write(jsonWriter, (MakeMoveCommand) command);
             case CONNECT -> gson.getAdapter(ConnectCommand.class).write(jsonWriter, (ConnectCommand) command);
             case RESIGN -> gson.getAdapter(UserGameCommand.class).write(jsonWriter, (UserGameCommand) command);
-            case LEAVE -> gson.getAdapter(UserGameCommand.class).write(jsonWriter, (UserGameCommand) command);
+            case LEAVE -> gson.getAdapter(LeaveCommand.class).write(jsonWriter, (LeaveCommand) command);
         }
     }
 
@@ -54,7 +54,7 @@ public class CommandTypeAdapter extends TypeAdapter<UserGameCommand> {
                 case CONNECT -> new ConnectCommand(commandType, authToken, gameID, username, color);
                 case MAKE_MOVE -> new MakeMoveCommand(commandType, authToken, gameID, move);
                 case RESIGN -> new UserGameCommand(commandType, authToken, gameID);
-                case LEAVE -> new UserGameCommand(commandType, authToken, gameID);
+                case LEAVE -> new LeaveCommand(commandType, authToken, gameID, username);
             };
         }
     }
