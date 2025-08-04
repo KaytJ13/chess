@@ -361,6 +361,8 @@ public class ChessClient implements NotificationHandler {
     private String highlight(String[] params) throws ResponseException {
         if (params.length < 2) {
             throw new ResponseException(400, "Missing position");
+        } else if (currentGame.getGameOver()) {
+            throw new ResponseException(400, "Game is over");
         }
 
         int[] validY = {1, 2, 3, 4, 5, 6, 7, 8};

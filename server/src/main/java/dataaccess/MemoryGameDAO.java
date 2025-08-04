@@ -61,6 +61,18 @@ public class MemoryGameDAO implements GameDAO{
     }
 
     @Override
+    public void madeMove(int gameID, ChessGame game) throws DataAccessException {
+        GameData currentGame = getGame(gameID);
+        if (currentGame == null) {
+            throw new DataAccessException("This game does not exist");
+        }
+        gameDB.remove(currentGame);
+        GameData updatedVersion = new GameData(gameID, currentGame.whiteUsername(), currentGame.blackUsername(),
+                    currentGame.gameName(), game);
+        createGame(updatedVersion);
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {
             return false;
