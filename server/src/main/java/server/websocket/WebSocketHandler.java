@@ -43,7 +43,7 @@ public class WebSocketHandler {
         switch (command.getCommandType()) {
             case CONNECT -> connect(((ConnectCommand) command), session);
             case LEAVE -> leave(((LeaveCommand) command), session);
-            case RESIGN -> resign();
+            case RESIGN -> resign(((ResignCommand) command), session);
             case MAKE_MOVE -> makeMove(((MakeMoveCommand) command), session);
         }
     }
@@ -80,8 +80,26 @@ public class WebSocketHandler {
         connections.broadcast(command.getUsername(), notification);
     }
 
-    public void resign() {
+    public void resign(ResignCommand command, Session session) throws ResponseException {
+        try {
+            GameData gameData = gameDAO.getGame(command.getGameID());
+            gameData.game().setGameOver(true);
+            var loadGame = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameData.game());
+            connections.broadcast("", loadGame);
 
+            String message = command.getUsername() + " has resigned. Game over.";
+            var notification = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
+            connections.broadcast("", notification);
+
+        } catch (Exception e) {
+            ErrorMessage errorMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR,
+                    "Error: Game not accessible");
+            try {
+                connections.broadcast("", errorMessage);
+            } catch (IOException ex) {
+                throw new ResponseException(500, "Game not accessible");
+            }
+        }
     }
 
     public void makeMove(MakeMoveCommand command, Session session) throws ResponseException {

@@ -118,7 +118,7 @@ public class ChessClient implements NotificationHandler {
                     redraw - Redraw the game board
                     leave - Leave the game
                     move <START POSITION> <END POSITION> <PROMOTION PIECE (optional)> - Moves a piece
-                    *resign - Forfeit the game
+                    resign - Forfeit the game
                     highlight <PIECE POSITION> - Highlights legal moves for a piece""";
             // leave, move, and resign communicate with the websocket
             // leave exits game view and sends a notification to everyone else
@@ -471,9 +471,13 @@ public class ChessClient implements NotificationHandler {
     private String resign() throws ResponseException {
         if (observer) {
             throw new ResponseException(400, "Observers cannot resign");
+        } else if (currentGame.getGameOver()) {
+            throw new ResponseException(400, "The game is already over");
         }
 
-        return "";
+        ws.sendResign(authToken, currentGameID, username);
+
+        return "You have resigned. Game over\n";
     }
 
     public void updateGame(ChessGame game) {
