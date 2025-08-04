@@ -409,6 +409,13 @@ public class ChessClient implements NotificationHandler {
 
         ChessMove move = createMove(params);
 
+        if (move.getPromotionPiece() == null && team == ChessGame.TeamColor.WHITE && move.getEndPosition().getRow() == 8) {
+            throw new ResponseException(400, "Missing promotion piece type");
+        } else if (move.getPromotionPiece() == null && team == ChessGame.TeamColor.BLACK &&
+                move.getEndPosition().getRow() == 1) {
+            throw new ResponseException(400, "Missing promotion piece type");
+        }
+
         var legal = false;
         Collection<ChessMove> legalMoves = currentGame.validMoves(move.getStartPosition());
         for (ChessMove i : legalMoves) {

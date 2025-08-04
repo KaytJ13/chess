@@ -141,7 +141,7 @@ public class ChessPosition implements Cloneable {
     @Override
     public String toString() {
         char[] columnOptions = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'};
-        return String.valueOf(columnOptions[col]) + row;
+        return String.valueOf(columnOptions[col-1]) + row;
 //        return "{" + row + ", " + col + '}';
     }
 
