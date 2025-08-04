@@ -35,7 +35,7 @@ public class WebSocketHandler {
     }
 
     @OnWebSocketMessage
-    public void onMessage(Session session, String message) throws IOException, ResponseException {
+    public void onMessage(Session session, String message) throws IOException, ResponseException, DataAccessException {
         GsonBuilder builder = new GsonBuilder();
         builder.registerTypeAdapter(UserGameCommand.class, new CommandTypeAdapter());
         Gson gson = builder.create();
@@ -72,7 +72,9 @@ public class WebSocketHandler {
 
     }
 
-    public void leave(LeaveCommand command, Session session) throws IOException {
+    public void leave(LeaveCommand command, Session session) throws IOException, ResponseException, DataAccessException {
+        gameDAO.updateGame(command.getGameID(), command.getColor(), null);
+
         connections.remove(command.getUsername());
         String message = command.getUsername() + " left the game";
         var notification = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);

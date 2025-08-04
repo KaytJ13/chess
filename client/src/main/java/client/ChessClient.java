@@ -113,7 +113,7 @@ public class ChessClient implements NotificationHandler {
                     Valid commands:
                     help - View valid commands
                     redraw - Redraw the game board
-                    *leave - Leave game view
+                    leave - Leave the game
                     *move <START POSITION> <END POSITION> - Moves a piece
                     *resign - Forfeit the game
                     highlight <PIECE POSITION> - Highlights legal moves for a piece""";
@@ -385,7 +385,7 @@ public class ChessClient implements NotificationHandler {
     }
 
     private String leave() throws ResponseException { // Still the Phase 5 version
-        ws.sendLeave(authToken, currentGameID, username);
+        ws.sendLeave(authToken, currentGameID, username, team);
 
         replLoopNum = 2;
         currentGame = null;
@@ -408,7 +408,7 @@ public class ChessClient implements NotificationHandler {
         } else if (notification.getServerMessageType() == ServerMessage.ServerMessageType.LOAD_GAME) {
             updateGame(((LoadGameMessage) notification).getGame());
 //            System.out.print(SET_TEXT_COLOR_BLUE + "DEBUG: current game reset = " + (currentGame != null) + "\n");
-            System.out.print(SET_TEXT_COLOR_BLUE + drawBoard(false, null) + "\n");
+            System.out.print(SET_TEXT_COLOR_BLUE + "\n" + drawBoard(false, null) + "\n");
         }
         System.out.print("\n" + SET_TEXT_COLOR_LIGHT_GREY + "Chess Game >>> " + SET_TEXT_COLOR_BLUE);
     }
