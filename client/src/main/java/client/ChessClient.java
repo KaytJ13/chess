@@ -28,6 +28,7 @@ public class ChessClient implements NotificationHandler {
     private final String serverUrl;
     private WebSocketFacade ws;
     private int currentGameID;
+    Boolean observer = false;
 
     public ChessClient(String url) {
         serverUrl = url;
@@ -82,6 +83,8 @@ public class ChessClient implements NotificationHandler {
                     case "leave" -> leave();
                     case "redraw" -> drawBoard(false, null);
                     case "highlight" -> highlight(tokens);
+                    case "move" -> makeMove(tokens);
+                    case "resign" -> resign();
                     default -> help();
                 };
             } else { // Pre-login
@@ -114,7 +117,7 @@ public class ChessClient implements NotificationHandler {
                     help - View valid commands
                     redraw - Redraw the game board
                     leave - Leave the game
-                    *move <START POSITION> <END POSITION> - Moves a piece
+                    move <START POSITION> <END POSITION> <PROMOTION PIECE (optional)> - Moves a piece
                     *resign - Forfeit the game
                     highlight <PIECE POSITION> - Highlights legal moves for a piece""";
             // leave, move, and resign communicate with the websocket
@@ -263,10 +266,10 @@ public class ChessClient implements NotificationHandler {
             team = ChessGame.TeamColor.WHITE; // This is purely for drawing the board
             replLoopNum = 3;
             currentGameID = gameID;
+            observer = true;
 
             ws = new WebSocketFacade(serverUrl, this);
             ws.sendConnect(authToken, gameID, username, null);
-            //Not finding current game and not updating
 
             return "Observing game " + gameID + "\n";
         } catch (ResponseException e) {
@@ -365,25 +368,85 @@ public class ChessClient implements NotificationHandler {
             throw new ResponseException(400, "Game is over");
         }
 
-        int[] validY = {1, 2, 3, 4, 5, 6, 7, 8};
-        String validX = "abcdefgh";
-        char[] positioning = params[1].toCharArray();
-
-        if (positioning.length < 2) {
-            throw new ResponseException(400, "Position must be <COLUMN><ROW>");
-        }
-
         try {
+            ChessPosition startPosition = parsePosition(params[1].toCharArray());
+            return drawBoard(true, startPosition);
+        } catch (ResponseException e) {
+            throw e;
+        } catch (Exception ex){
+            throw new ResponseException(400, ex.getMessage());
+        }
+    }
+
+    private ChessPosition parsePosition(char[] positioning) throws ResponseException {
+        try {
+            if (positioning.length < 2) {
+                throw new ResponseException(400, "Position must be <COLUMN><ROW>");
+            }
+
+            int[] validY = {1, 2, 3, 4, 5, 6, 7, 8};
+            String validX = "abcdefgh";
+
             int row = positioning[1] - '0';
             int column = validY[validX.indexOf(positioning[0])];
 
-            ChessPosition startPosition = new ChessPosition(row, column);
-            return drawBoard(true, startPosition);
-        } catch (Exception ex){
-            throw new ResponseException(400, ex.getMessage());
+            return new ChessPosition(row, column);
         } catch (Throwable e) {
             throw new ResponseException(400, "Column must be a letter a-h and row must be a number 1-8");
         }
+    }
+
+    private String makeMove(String[] params) throws ResponseException {
+        if (observer) {
+            throw new ResponseException(400, "Observers cannot make moves");
+        } else if (params.length < 3) {
+            throw new ResponseException(400, "Missing start or end position");
+        } else if (currentGame.getGameOver()) {
+            throw new ResponseException(400, "Game is over");
+        } else if (currentGame.getTeamTurn() != team) {
+            throw new ResponseException(400, "It's not your turn");
+        }
+
+        ChessMove move = createMove(params);
+
+        var legal = false;
+        Collection<ChessMove> legalMoves = currentGame.validMoves(move.getStartPosition());
+        for (ChessMove i : legalMoves) {
+            if (i.equals(move)) {
+                legal = true;
+                break;
+            }
+        }
+
+        if (!legal) {
+            throw new ResponseException(400, "Move not legal");
+        }
+
+        ws.makeMove(authToken, currentGameID, username, move);
+
+        return "Moved " + move.getStartPosition() + " to " + move.getEndPosition() + "\n";
+    }
+
+    private ChessMove createMove(String[] params) throws ResponseException {
+        ChessPosition startPosition = parsePosition(params[1].toCharArray());
+        ChessPosition endPosition = parsePosition(params[2].toCharArray());
+
+        ChessPiece.PieceType promotionPiece;
+        if (params.length < 4) {
+            promotionPiece = null;
+        } else {
+            promotionPiece = switch (params[3]) {
+                case "king" -> ChessPiece.PieceType.KING;
+                case "queen" -> ChessPiece.PieceType.QUEEN;
+                case "knight" -> ChessPiece.PieceType.KNIGHT;
+                case "rook" -> ChessPiece.PieceType.ROOK;
+                case "bishop" -> ChessPiece.PieceType.BISHOP;
+                default -> throw new ResponseException(400,
+                        "Not a valid piece type for promotion (king, queen, knight, rook, bishop");
+            };
+        }
+
+        return new ChessMove(startPosition, endPosition, promotionPiece);
     }
 
     private String leave() throws ResponseException { // Still the Phase 5 version
@@ -393,8 +456,17 @@ public class ChessClient implements NotificationHandler {
         currentGame = null;
         team = null;
         currentGameID = 0;
+        observer = false;
 
         return "Game view exited\n";
+    }
+
+    private String resign() throws ResponseException {
+        if (observer) {
+            throw new ResponseException(400, "Observers cannot resign");
+        }
+
+        return "";
     }
 
     public void updateGame(ChessGame game) {
@@ -404,9 +476,9 @@ public class ChessClient implements NotificationHandler {
     public void notify(ServerMessage notification) {
 //        System.out.print(SET_TEXT_COLOR_BLUE + "DEBUG: caught a notification in notify: " + notification + "\n");
         if (notification.getServerMessageType() == ServerMessage.ServerMessageType.NOTIFICATION) {
-            System.out.print(SET_TEXT_COLOR_BLUE + ((NotificationMessage) notification).getMessage() + "\n");
+            System.out.print(SET_TEXT_COLOR_BLUE + "\n" + ((NotificationMessage) notification).getMessage() + "\n");
         } else if (notification.getServerMessageType() == ServerMessage.ServerMessageType.ERROR) {
-            System.out.print(SET_TEXT_COLOR_BLUE + ((ErrorMessage) notification).getErrorMessage() + "\n");
+            System.out.print(SET_TEXT_COLOR_BLUE + "\n" + ((ErrorMessage) notification).getErrorMessage() + "\n");
         } else if (notification.getServerMessageType() == ServerMessage.ServerMessageType.LOAD_GAME) {
             updateGame(((LoadGameMessage) notification).getGame());
 //            System.out.print(SET_TEXT_COLOR_BLUE + "DEBUG: current game reset = " + (currentGame != null) + "\n");

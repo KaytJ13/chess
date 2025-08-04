@@ -2,6 +2,7 @@ package server.websocket;
 
 import chess.ChessGame;
 
+import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -14,10 +15,8 @@ import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 
-import websocket.commands.CommandTypeAdapter;
-import websocket.commands.ConnectCommand;
-import websocket.commands.LeaveCommand;
-import websocket.commands.UserGameCommand;
+import websocket.commands.*;
+import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
@@ -45,7 +44,7 @@ public class WebSocketHandler {
             case CONNECT -> connect(((ConnectCommand) command), session);
             case LEAVE -> leave(((LeaveCommand) command), session);
             case RESIGN -> resign();
-            case MAKE_MOVE -> makeMove();
+            case MAKE_MOVE -> makeMove(((MakeMoveCommand) command), session);
         }
     }
 
@@ -85,7 +84,66 @@ public class WebSocketHandler {
 
     }
 
-    public void makeMove() {
+    public void makeMove(MakeMoveCommand command, Session session) throws ResponseException {
+        try {
+            GameData gameData = gameDAO.getGame(command.getGameID());
+            gameData.game().makeMove(command.getMove());
+            String checkResponse = checkGameOver(gameData);
+            gameDAO.madeMove(command.getGameID(), gameData.game());
 
+            String message = command.getUsername() + " moved " + command.getMove().getStartPosition() + " to " +
+                    command.getMove().getEndPosition();
+            var notification = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
+            connections.broadcast(command.getUsername(), notification);
+
+            var loadGame = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameData.game());
+            connections.broadcast("", loadGame);
+
+            if (checkResponse != null) {
+                var checkNotification = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, checkResponse);
+                connections.broadcast("", checkNotification);
+            }
+
+        } catch (DataAccessException e) {
+            ErrorMessage errorMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR,
+                    "Error: Game not accessible");
+            try {
+                connections.broadcast("", errorMessage);
+            } catch (IOException ex) {
+                throw new ResponseException(500, "Game not accessible");
+            }
+        } catch (InvalidMoveException e) {
+            ErrorMessage errorMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR,
+                    "Error: Move not legal");
+            try {
+                connections.broadcast("", errorMessage);
+            } catch (IOException ex) {
+                throw new ResponseException(500, "Game not accessible");
+            }
+        } catch (IOException e) {
+            throw new ResponseException(500, "Game not accessible");
+        }
+    }
+
+    private String checkGameOver(GameData gameData) {
+        ChessGame game = gameData.game();
+
+        String message = null;
+        if (game.isInCheckmate(ChessGame.TeamColor.WHITE)) {
+            message = "White team is in checkmate. Black team wins!";
+            game.setGameOver(true);
+        } else if (game.isInCheckmate(ChessGame.TeamColor.BLACK)) {
+            message = "Black team is in checkmate. White team wins!";
+            game.setGameOver(true);
+        } else if (game.isInStalemate(ChessGame.TeamColor.WHITE)) {
+            message = "Stalemate. Game over.";
+            game.setGameOver(true);
+        } else if (game.isInCheck(ChessGame.TeamColor.WHITE)) {
+            message = "White team is in check.";
+        } else if (game.isInCheck(ChessGame.TeamColor.BLACK)) {
+            message = "Black team is in check.";
+        }
+
+        return message;
     }
 }

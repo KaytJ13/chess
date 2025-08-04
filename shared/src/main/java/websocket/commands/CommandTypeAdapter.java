@@ -52,7 +52,7 @@ public class CommandTypeAdapter extends TypeAdapter<UserGameCommand> {
         } else {
             return switch (commandType) {
                 case CONNECT -> new ConnectCommand(commandType, authToken, gameID, username, color);
-                case MAKE_MOVE -> new MakeMoveCommand(commandType, authToken, gameID, move);
+                case MAKE_MOVE -> new MakeMoveCommand(commandType, authToken, gameID, username, move);
                 case RESIGN -> new UserGameCommand(commandType, authToken, gameID);
                 case LEAVE -> new LeaveCommand(commandType, authToken, gameID, username, color);
             };

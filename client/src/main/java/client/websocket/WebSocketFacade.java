@@ -1,14 +1,12 @@
 package client.websocket;
 
 import chess.ChessGame;
+import chess.ChessMove;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import exception.ResponseException;
-import websocket.commands.CommandTypeAdapter;
-import websocket.commands.ConnectCommand;
-import websocket.commands.LeaveCommand;
-import websocket.commands.UserGameCommand;
+import websocket.commands.*;
 import websocket.messages.*;
 
 import javax.websocket.*;
@@ -74,12 +72,23 @@ public class WebSocketFacade extends Endpoint {
     }
 
     // Make Move
+    public void makeMove(String authToken, int gameID, String username, ChessMove move) throws ResponseException {
+        try {
+            MakeMoveCommand command = new MakeMoveCommand(UserGameCommand.CommandType.MAKE_MOVE, authToken, gameID,
+                    username, move);
+            this.session.getBasicRemote().sendText(gson.toJson(command));
+        } catch (IOException ex) {
+            throw new ResponseException(500, ex.getMessage());
+        }
+    }
 
     // Leave
-    public void sendLeave(String authToken, int gameID, String username, ChessGame.TeamColor color) throws ResponseException {
+    public void sendLeave(String authToken, int gameID, String username, ChessGame.TeamColor color)
+            throws ResponseException {
         // This doesn't work yet, obviously
         try {
-            LeaveCommand command = new LeaveCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID, username, color);
+            LeaveCommand command = new LeaveCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID, username,
+                    color);
             this.session.getBasicRemote().sendText(gson.toJson(command));
             this.session.close();
         } catch (IOException e) {

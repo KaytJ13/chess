@@ -13,9 +13,10 @@ import java.util.Objects;
 public class ChessGame {
     TeamColor teamTurn;
     ChessBoard board;
-    Boolean gameOver = false;
+    Boolean gameOver;
 
     public ChessGame() {
+        gameOver = false;
         teamTurn = TeamColor.WHITE;
         board = new ChessBoard();
         board.resetBoard();

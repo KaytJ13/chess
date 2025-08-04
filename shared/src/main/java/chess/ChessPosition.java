@@ -140,7 +140,9 @@ public class ChessPosition implements Cloneable {
 
     @Override
     public String toString() {
-        return "{" + row + ", " + col + '}';
+        char[] columnOptions = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'};
+        return String.valueOf(columnOptions[col]) + row;
+//        return "{" + row + ", " + col + '}';
     }
 
     @Override
