@@ -467,6 +467,14 @@ public class ChessClient implements NotificationHandler {
     }
 
     private String resign() throws ResponseException {
+        Scanner confirmScanner = new Scanner(System.in);
+        System.out.print(SET_TEXT_COLOR_MAGENTA + "\nAre you sure you want to resign? (yes/no)\n\n>>> ");
+        String confirmation = confirmScanner.nextLine().toLowerCase();
+        if (confirmation.equals("no")) {
+            return "Resign aborted.";
+        } else if (!confirmation.equals("yes")) {
+            throw new ResponseException(400, "Response must be yes/no");
+        }
 
         ws.sendResign(authToken, currentGameID);
 

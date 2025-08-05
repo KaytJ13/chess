@@ -2,7 +2,6 @@ package server.websocket;
 
 import chess.ChessGame;
 
-import chess.ChessMove;
 import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -10,7 +9,6 @@ import com.google.gson.GsonBuilder;
 import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
-import exception.ResponseException;
 import model.AuthData;
 import model.GameData;
 
@@ -22,7 +20,6 @@ import websocket.commands.*;
 import websocket.messages.*;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
 
@@ -259,21 +256,23 @@ public class WebSocketHandler {
 
     private String checkGameOver(GameData gameData) {
         ChessGame game = gameData.game();
+        String whiteUser = gameData.whiteUsername();
+        String blackUser = gameData.blackUsername();
 
         String message = null;
         if (game.isInCheckmate(ChessGame.TeamColor.WHITE)) {
-            message = "White team is in checkmate. Black team wins!";
+            message = whiteUser + " is in checkmate. " + blackUser + " wins!";
             game.setGameOver(true);
         } else if (game.isInCheckmate(ChessGame.TeamColor.BLACK)) {
-            message = "Black team is in checkmate. White team wins!";
+            message = blackUser + " is in checkmate. " + whiteUser + " wins!";
             game.setGameOver(true);
         } else if (game.isInStalemate(ChessGame.TeamColor.WHITE)) {
             message = "Stalemate. Game over.";
             game.setGameOver(true);
         } else if (game.isInCheck(ChessGame.TeamColor.WHITE)) {
-            message = "White team is in check.";
+            message = whiteUser + " is in check.";
         } else if (game.isInCheck(ChessGame.TeamColor.BLACK)) {
-            message = "Black team is in check.";
+            message = blackUser + " is in check.";
         }
 
         return message;
