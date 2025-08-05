@@ -120,11 +120,6 @@ public class ChessClient implements NotificationHandler {
                     move <START POSITION> <END POSITION> <PROMOTION PIECE (optional)> - Moves a piece
                     resign - Forfeit the game
                     highlight <PIECE POSITION> - Highlights legal moves for a piece""";
-            // leave, move, and resign communicate with the websocket
-            // leave exits game view and sends a notification to everyone else
-            // move sends an update to everyone, notifies them of the move, and redraws the board
-            // resign ends gameplay, notifies everyone, and makes further moves impossible
-            // update observe and join so that they send messages and also so currentGame gets set to the right game
         } else {
             return """
                     Valid commands:
@@ -403,12 +398,13 @@ public class ChessClient implements NotificationHandler {
         }
 
         ChessMove move = createMove(params);
-
-        if (currentGame.getBoard().getPiece(move.getStartPosition()).getPieceType() == ChessPiece.PieceType.PAWN) {
-            if (move.getPromotionPiece() == null && team == ChessGame.TeamColor.WHITE && move.getEndPosition().getRow() == 8) {
-                throw new ResponseException(400, "Missing promotion piece type");
-            } else if (move.getPromotionPiece() == null && team == ChessGame.TeamColor.BLACK && move.getEndPosition().getRow() == 1) {
-                throw new ResponseException(400, "Missing promotion piece type");
+        if (currentGame.getBoard().getPiece(move.getStartPosition()) != null) {
+            if (currentGame.getBoard().getPiece(move.getStartPosition()).getPieceType() == ChessPiece.PieceType.PAWN) {
+                if (move.getPromotionPiece() == null && team == ChessGame.TeamColor.WHITE && move.getEndPosition().getRow() == 8) {
+                    throw new ResponseException(400, "Missing promotion piece type");
+                } else if (move.getPromotionPiece() == null && team == ChessGame.TeamColor.BLACK && move.getEndPosition().getRow() == 1) {
+                    throw new ResponseException(400, "Missing promotion piece type");
+                }
             }
         }
 
@@ -422,6 +418,9 @@ public class ChessClient implements NotificationHandler {
     }
 
     private boolean checkMoveLegal(ChessMove move) {
+        if (team != currentGame.getTeamTurn() || currentGame.getGameOver() || observer) {
+            return false;
+        }
         Collection<ChessMove> legalMoves = currentGame.validMoves(move.getStartPosition());
         if (legalMoves != null) {
             for (ChessMove i : legalMoves) {
@@ -471,11 +470,12 @@ public class ChessClient implements NotificationHandler {
 
         ws.sendResign(authToken, currentGameID);
 
-        if (!currentGame.getGameOver()) {
-            return "You have resigned. Game over\n";
-        } else {
-            return "";
-        }
+        return "";
+//        if (!currentGame.getGameOver() && !observer) {
+//            return "You have resigned. Game over\n";
+//        } else {
+//            return "";
+//        }
     }
 
     public void updateGame(ChessGame game) {
@@ -483,14 +483,12 @@ public class ChessClient implements NotificationHandler {
     }
 
     public void notify(ServerMessage notification) {
-//        System.out.print(SET_TEXT_COLOR_BLUE + "DEBUG: caught a notification in notify: " + notification + "\n");
         if (notification.getServerMessageType() == ServerMessage.ServerMessageType.NOTIFICATION) {
             System.out.print(SET_TEXT_COLOR_BLUE + "\n" + ((NotificationMessage) notification).getMessage() + "\n");
         } else if (notification.getServerMessageType() == ServerMessage.ServerMessageType.ERROR) {
             System.out.print(SET_TEXT_COLOR_BLUE + "\n" + ((ErrorMessage) notification).getErrorMessage() + "\n");
         } else if (notification.getServerMessageType() == ServerMessage.ServerMessageType.LOAD_GAME) {
             updateGame(((LoadGameMessage) notification).getGame());
-//            System.out.print(SET_TEXT_COLOR_BLUE + "DEBUG: current game reset = " + (currentGame != null) + "\n");
             System.out.print(SET_TEXT_COLOR_BLUE + "\n" + drawBoard(false, null) + "\n");
         }
         System.out.print("\n" + SET_TEXT_COLOR_LIGHT_GREY + "Chess Game >>> " + SET_TEXT_COLOR_BLUE);
