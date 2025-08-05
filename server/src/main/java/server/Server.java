@@ -6,8 +6,6 @@ import handlers.*;
 import server.websocket.WebSocketHandler;
 import services.*;
 import spark.*;
-import websocket.commands.ConnectCommand;
-import websocket.commands.UserGameCommand;
 
 public class Server {
     private final ClearHandler clearHandler;
@@ -149,12 +147,6 @@ public class Server {
         try {
             joinGameHandler.joinGame(req.body(), req.headers("authorization"));
 
-//            int gameID = Integer.parseInt(req.params(":gameID"));
-//            ConnectCommand command = new ConnectCommand(UserGameCommand.CommandType.CONNECT, req.headers("authorization"), )
-//            webSocketHandler.connect(command, );
-
-//            ws = new WebSocketFacade(serverUrl, this);
-//            ws.sendConnect(authToken, gameID, username, color);
         } catch (ResponseException e) {
             return exceptionHandler(e, res);
         } catch (DataAccessException e) {

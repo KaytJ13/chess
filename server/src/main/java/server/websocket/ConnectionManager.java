@@ -39,28 +39,6 @@ public class ConnectionManager {
         }
     }
 
-    public void broadcast(String excludeUser, ServerMessage notification) throws IOException {
-        GsonBuilder builder = new GsonBuilder();
-        builder.registerTypeAdapter(ServerMessage.class, new ServerMessageTypeAdapter());
-        Gson gson = builder.create();
-
-        var removeList = new ArrayList<Connection>();
-        for (var c : connections.values()) {
-            if (c.session.isOpen()) {
-                if (!c.username.equals(excludeUser)) {
-                    c.send(gson.toJson(notification));
-                }
-            } else {
-                removeList.add(c);
-            }
-        }
-
-        // Clean up any connections that were left open.
-        for (var c : removeList) {
-            connections.remove(c.username);
-        }
-    }
-
     public void broadcastGame(Collection<Session> excludeList, ServerMessage notification) throws IOException {
         GsonBuilder builder = new GsonBuilder();
         builder.registerTypeAdapter(ServerMessage.class, new ServerMessageTypeAdapter());

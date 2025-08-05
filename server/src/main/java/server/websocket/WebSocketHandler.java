@@ -54,32 +54,32 @@ public class WebSocketHandler {
         }
     }
 
-    private boolean matchAuth(String authToken, Session session) {
+    private boolean checkAuthInvalid(String authToken, Session session) {
         try {
             boolean match;
             AuthData authData = authDAO.getAuth(authToken);
 
             if (authData == null) {
-                match = false;
+                match = true;
             } else {
                 match = Objects.equals(authData.authToken(), authToken);
             }
 
             if (!match) {
                 sendErrorMessage("Error: unauthorized", session);
-                return false;
+                return true;
             }
 
-            return true;
+            return false;
         } catch (DataAccessException e) {
             sendErrorMessage("Error: database could not be accessed", session);
 
-            return false;
+            return true;
         }
     }
 
     public void connect(ConnectCommand command, Session session) {
-        if (!matchAuth(command.getAuthToken(), session)) {
+        if (checkAuthInvalid(command.getAuthToken(), session)) {
             return ;
         }
 
@@ -128,7 +128,7 @@ public class WebSocketHandler {
 
     public void leave(LeaveCommand command, Session session) {
         try {
-            if (!matchAuth(command.getAuthToken(), session)) {
+            if (checkAuthInvalid(command.getAuthToken(), session)) {
                 return ;
             }
 
@@ -154,7 +154,7 @@ public class WebSocketHandler {
     }
 
     public void resign(ResignCommand command, Session session) {
-        if (!matchAuth(command.getAuthToken(), session)) {
+        if (checkAuthInvalid(command.getAuthToken(), session)) {
             return ;
         }
 
@@ -184,7 +184,7 @@ public class WebSocketHandler {
     }
 
     public void makeMove(MakeMoveCommand command, Session session) {
-        if (!matchAuth(command.getAuthToken(), session)) {
+        if (checkAuthInvalid(command.getAuthToken(), session)) {
             return ;
         }
 
