@@ -160,9 +160,6 @@ public class ServerFacadeTests {
             facade.createGame(new CreateGameRequest("Game1"), auth.authToken());
             facade.joinGame(new JoinRequest(ChessGame.TeamColor.WHITE, 1), auth.authToken());
             ListGamesResponse games = facade.listGames(auth.authToken());
-            for (UserFriendlyGameData game : games.games()) {
-                System.out.printf(game.toString());
-            }
             assert Objects.equals(games.games()[0].whiteUsername(), "user") &&
                     Objects.equals(games.games()[0].gameName(), "Game1");
             assert true;

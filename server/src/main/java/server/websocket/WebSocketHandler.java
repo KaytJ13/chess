@@ -2,6 +2,7 @@ package server.websocket;
 
 import chess.ChessGame;
 
+import chess.ChessMove;
 import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -9,6 +10,7 @@ import com.google.gson.GsonBuilder;
 import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
+import exception.ResponseException;
 import model.AuthData;
 import model.GameData;
 
@@ -20,6 +22,7 @@ import websocket.commands.*;
 import websocket.messages.*;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
 
@@ -94,17 +97,17 @@ public class WebSocketHandler {
             connections.sendOneUser(session, loadGame);
 
             String message;
-            if (!gameData.blackUsername().equals(authData.username()) && !gameData.whiteUsername().equals(authData.username())) {
+            if (!authData.username().equals(gameData.blackUsername()) && !authData.username().equals(gameData.whiteUsername())) {
                 message = authData.username() + " is now observing the game.";
             } else {
-                String colorString = gameData.whiteUsername().equals(authData.username()) ? "white" : "black";
+                String colorString = authData.username().equals(gameData.whiteUsername()) ? "white" : "black";
                 message = authData.username() + " joined the game as " + colorString;
             }
             var notification = new NotificationMessage(message);
 
             excludeAndBroadcast(session, command.getGameID(), notification, true);
 
-        } catch (Throwable e) {
+        } catch (Exception e) {
             sendErrorMessage("Error: Game not accessible", session);
         }
 

@@ -404,29 +404,33 @@ public class ChessClient implements NotificationHandler {
 
         ChessMove move = createMove(params);
 
-        if (move.getPromotionPiece() == null && team == ChessGame.TeamColor.WHITE && move.getEndPosition().getRow() == 8) {
-            throw new ResponseException(400, "Missing promotion piece type");
-        } else if (move.getPromotionPiece() == null && team == ChessGame.TeamColor.BLACK &&
-                move.getEndPosition().getRow() == 1) {
-            throw new ResponseException(400, "Missing promotion piece type");
-        }
-
-        var legal = false;
-        Collection<ChessMove> legalMoves = currentGame.validMoves(move.getStartPosition());
-        for (ChessMove i : legalMoves) {
-            if (i.equals(move)) {
-                legal = true;
-                break;
+        if (currentGame.getBoard().getPiece(move.getStartPosition()).getPieceType() == ChessPiece.PieceType.PAWN) {
+            if (move.getPromotionPiece() == null && team == ChessGame.TeamColor.WHITE && move.getEndPosition().getRow() == 8) {
+                throw new ResponseException(400, "Missing promotion piece type");
+            } else if (move.getPromotionPiece() == null && team == ChessGame.TeamColor.BLACK && move.getEndPosition().getRow() == 1) {
+                throw new ResponseException(400, "Missing promotion piece type");
             }
-        }
-
-        if (!legal) {
-            throw new ResponseException(400, "Move not legal");
         }
 
         ws.makeMove(authToken, currentGameID, move);
 
-        return "Moved " + move.getStartPosition() + " to " + move.getEndPosition() + "\n";
+        if (checkMoveLegal(move)) {
+            return "Moved " + move.getStartPosition() + " to " + move.getEndPosition() + "\n";
+        } else {
+            return "";
+        }
+    }
+
+    private boolean checkMoveLegal(ChessMove move) {
+        Collection<ChessMove> legalMoves = currentGame.validMoves(move.getStartPosition());
+        if (legalMoves != null) {
+            for (ChessMove i : legalMoves) {
+                if (i.equals(move)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private ChessMove createMove(String[] params) throws ResponseException {
@@ -467,7 +471,11 @@ public class ChessClient implements NotificationHandler {
 
         ws.sendResign(authToken, currentGameID);
 
-        return "You have resigned. Game over\n";
+        if (!currentGame.getGameOver()) {
+            return "You have resigned. Game over\n";
+        } else {
+            return "";
+        }
     }
 
     public void updateGame(ChessGame game) {
