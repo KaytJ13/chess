@@ -398,16 +398,9 @@ public class ChessClient implements NotificationHandler {
     }
 
     private String makeMove(String[] params) throws ResponseException {
-//        if (observer) {
-//            throw new ResponseException(400, "Observers cannot make moves");
-//        } else
         if (params.length < 3) {
             throw new ResponseException(400, "Missing start or end position");
-        } // else if (currentGame.getGameOver()) {
-//            throw new ResponseException(400, "Game is over");
-//        } else if (currentGame.getTeamTurn() != team) {
-//            throw new ResponseException(400, "It's not your turn");
-//        }
+        }
 
         ChessMove move = createMove(params);
 
@@ -471,11 +464,6 @@ public class ChessClient implements NotificationHandler {
     }
 
     private String resign() throws ResponseException {
-        if (observer) {
-            throw new ResponseException(400, "Observers cannot resign");
-        } else if (currentGame.getGameOver()) {
-            throw new ResponseException(400, "The game is already over");
-        }
 
         ws.sendResign(authToken, currentGameID);
 

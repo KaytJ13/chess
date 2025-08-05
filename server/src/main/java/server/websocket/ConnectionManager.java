@@ -8,6 +8,7 @@ import websocket.messages.ServerMessageTypeAdapter;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ConnectionManager {
@@ -39,8 +40,6 @@ public class ConnectionManager {
     }
 
     public void broadcast(String excludeUser, ServerMessage notification) throws IOException {
-//        System.out.print("DEBUG: entered broadcast\n");
-
         GsonBuilder builder = new GsonBuilder();
         builder.registerTypeAdapter(ServerMessage.class, new ServerMessageTypeAdapter());
         Gson gson = builder.create();
@@ -49,7 +48,28 @@ public class ConnectionManager {
         for (var c : connections.values()) {
             if (c.session.isOpen()) {
                 if (!c.username.equals(excludeUser)) {
-//                    System.out.print("DEBUG: broadcasting to " + c.username + " with notification " + gson.toJson(notification) + "\n");
+                    c.send(gson.toJson(notification));
+                }
+            } else {
+                removeList.add(c);
+            }
+        }
+
+        // Clean up any connections that were left open.
+        for (var c : removeList) {
+            connections.remove(c.username);
+        }
+    }
+
+    public void broadcastGame(Collection<Session> excludeList, ServerMessage notification) throws IOException {
+        GsonBuilder builder = new GsonBuilder();
+        builder.registerTypeAdapter(ServerMessage.class, new ServerMessageTypeAdapter());
+        Gson gson = builder.create();
+
+        var removeList = new ArrayList<Connection>();
+        for (var c : connections.values()) {
+            if (c.session.isOpen()) {
+                if (!excludeList.contains(c.session)) {
                     c.send(gson.toJson(notification));
                 }
             } else {

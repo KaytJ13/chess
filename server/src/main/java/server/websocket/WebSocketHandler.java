@@ -9,7 +9,6 @@ import com.google.gson.GsonBuilder;
 import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
-import exception.ResponseException;
 import model.AuthData;
 import model.GameData;
 
@@ -21,6 +20,7 @@ import websocket.commands.*;
 import websocket.messages.*;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Objects;
 
 @WebSocket
@@ -29,6 +29,10 @@ public class WebSocketHandler {
     private final ConnectionManager connections = new ConnectionManager();
     private final GameDAO gameDAO;
     private final AuthDAO authDAO;
+
+    public record AudienceAssignment(int gameID, Session session) {}
+
+    private final HashSet<AudienceAssignment> gameAudiences = new HashSet<>();
 
     public WebSocketHandler(GameDAO gameDAO, AuthDAO authDAO) {
         this.gameDAO = gameDAO;
@@ -83,6 +87,7 @@ public class WebSocketHandler {
             AuthData authData = authDAO.getAuth(command.getAuthToken());
 
             connections.add(authData.username(), session);
+            gameAudiences.add(new AudienceAssignment(command.getGameID(), session));
 
             GameData gameData = gameDAO.getGame(command.getGameID());
             var loadGame = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameData.game());
@@ -96,7 +101,8 @@ public class WebSocketHandler {
                 message = authData.username() + " joined the game as " + colorString;
             }
             var notification = new NotificationMessage(message);
-            connections.broadcast(authData.username(), notification);
+
+            excludeAndBroadcast(session, command.getGameID(), notification, true);
 
         } catch (Throwable e) {
             sendErrorMessage("Error: Game not accessible", session);
@@ -104,28 +110,43 @@ public class WebSocketHandler {
 
     }
 
+    private void excludeAndBroadcast(Session session, int gameID, ServerMessage notification, boolean excludeSelf)
+            throws IOException {
+        HashSet<Session> excludeList = new HashSet<>();
+
+        if (excludeSelf) {
+            excludeList.add(session);
+        }
+
+        for (AudienceAssignment user : gameAudiences) {
+            if (user.gameID != gameID) {
+                excludeList.add(user.session);
+            }
+        }
+        connections.broadcastGame(excludeList, notification);
+    }
+
     public void leave(LeaveCommand command, Session session) {
         try {
             if (!matchAuth(command.getAuthToken(), session)) {
-                return ;
-            } else if (!session.isOpen()) {
                 return ;
             }
 
             AuthData authData = authDAO.getAuth(command.getAuthToken());
             GameData gameData = gameDAO.getGame(command.getGameID());
+            String username = authData.username();
 
-            if (gameData.whiteUsername().equals(authData.username()) ||
-                    gameData.blackUsername().equals(authData.username())) {
-                ChessGame.TeamColor color = gameData.whiteUsername().equals(authData.username()) ?
-                        ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK;
+            if (username.equals(gameData.whiteUsername()) || username.equals(gameData.blackUsername())) {
+                ChessGame.TeamColor color = username.equals(gameData.whiteUsername()) ? ChessGame.TeamColor.WHITE :
+                        ChessGame.TeamColor.BLACK;
                 gameDAO.updateGame(command.getGameID(), color, null);
             }
 
-            connections.remove(authData.username());
-            String message = authData.username() + " left the game";
+            String message = username + " left the game";
             var notification = new NotificationMessage(message);
-            connections.broadcast(authData.username(), notification);
+            excludeAndBroadcast(session, command.getGameID(), notification, true);
+            connections.remove(username);
+            gameAudiences.remove(new AudienceAssignment(command.getGameID(), session));
 
         } catch (Throwable e) {
             return ;
@@ -141,13 +162,21 @@ public class WebSocketHandler {
             GameData gameData = gameDAO.getGame(command.getGameID());
             AuthData authData = authDAO.getAuth(command.getAuthToken());
 
+            if (gameData.game().getGameOver()) {
+                sendErrorMessage("Error: Game is already over", session);
+                return ;
+            } else if (!authData.username().equals(gameData.whiteUsername()) &&
+                    !authData.username().equals(gameData.blackUsername())) {
+                sendErrorMessage("Error: Observers cannot resign", session);
+                return ;
+            }
+
             gameData.game().setGameOver(true);
-            var loadGame = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameData.game());
-            connections.broadcast("", loadGame);
+            gameDAO.madeMove(command.getGameID(), gameData.game());
 
             String message = authData.username() + " has resigned. Game over.";
             var notification = new NotificationMessage(message);
-            connections.broadcast("", notification);
+            excludeAndBroadcast(session, command.getGameID(), notification, false);
 
         } catch (Exception e) {
             sendErrorMessage("Error: Game not accessible", session);
@@ -178,14 +207,14 @@ public class WebSocketHandler {
             String message = authData.username() + " moved " + command.getMove().getStartPosition() + " to " +
                     command.getMove().getEndPosition();
             var notification = new NotificationMessage(message);
-            connections.broadcast(authData.username(), notification);
+            excludeAndBroadcast(session, command.getGameID(), notification, true);
 
             var loadGame = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameData.game());
-            connections.broadcast("", loadGame);
+            excludeAndBroadcast(session, command.getGameID(), loadGame, false);
 
             if (checkResponse != null) {
                 var checkNotification = new NotificationMessage(checkResponse);
-                connections.broadcast("", checkNotification);
+                excludeAndBroadcast(session, command.getGameID(), checkNotification, false);
             }
 
         } catch (DataAccessException | IOException e) {
