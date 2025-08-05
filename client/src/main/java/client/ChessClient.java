@@ -471,11 +471,6 @@ public class ChessClient implements NotificationHandler {
         ws.sendResign(authToken, currentGameID);
 
         return "";
-//        if (!currentGame.getGameOver() && !observer) {
-//            return "You have resigned. Game over\n";
-//        } else {
-//            return "";
-//        }
     }
 
     public void updateGame(ChessGame game) {
