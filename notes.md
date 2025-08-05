@@ -1,4 +1,4 @@
 #My notes:
 -
-Test makeMove and code Resign
-Make sure resign also checks if the game is over
+- Fix all of the errors from the tests
+- Just test all the things and fix sending error messages instead of just throwing things

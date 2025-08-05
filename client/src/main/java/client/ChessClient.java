@@ -321,6 +321,7 @@ public class ChessClient implements NotificationHandler {
                 highlightedSquares.add(move.getEndPosition());
             }
         }
+        highlightedSquares.add(startPosition);
         return highlightedSquares;
     }
 
@@ -397,15 +398,16 @@ public class ChessClient implements NotificationHandler {
     }
 
     private String makeMove(String[] params) throws ResponseException {
-        if (observer) {
-            throw new ResponseException(400, "Observers cannot make moves");
-        } else if (params.length < 3) {
+//        if (observer) {
+//            throw new ResponseException(400, "Observers cannot make moves");
+//        } else
+        if (params.length < 3) {
             throw new ResponseException(400, "Missing start or end position");
-        } else if (currentGame.getGameOver()) {
-            throw new ResponseException(400, "Game is over");
-        } else if (currentGame.getTeamTurn() != team) {
-            throw new ResponseException(400, "It's not your turn");
-        }
+        } // else if (currentGame.getGameOver()) {
+//            throw new ResponseException(400, "Game is over");
+//        } else if (currentGame.getTeamTurn() != team) {
+//            throw new ResponseException(400, "It's not your turn");
+//        }
 
         ChessMove move = createMove(params);
 
@@ -429,7 +431,7 @@ public class ChessClient implements NotificationHandler {
             throw new ResponseException(400, "Move not legal");
         }
 
-        ws.makeMove(authToken, currentGameID, username, move);
+        ws.makeMove(authToken, currentGameID, move);
 
         return "Moved " + move.getStartPosition() + " to " + move.getEndPosition() + "\n";
     }
@@ -456,8 +458,8 @@ public class ChessClient implements NotificationHandler {
         return new ChessMove(startPosition, endPosition, promotionPiece);
     }
 
-    private String leave() throws ResponseException { // Still the Phase 5 version
-        ws.sendLeave(authToken, currentGameID, username, team);
+    private String leave() throws ResponseException {
+        ws.sendLeave(authToken, currentGameID);
 
         replLoopNum = 2;
         currentGame = null;
@@ -475,7 +477,7 @@ public class ChessClient implements NotificationHandler {
             throw new ResponseException(400, "The game is already over");
         }
 
-        ws.sendResign(authToken, currentGameID, username);
+        ws.sendResign(authToken, currentGameID);
 
         return "You have resigned. Game over\n";
     }

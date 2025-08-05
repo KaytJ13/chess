@@ -50,7 +50,7 @@ public class ServerMessageTypeAdapter extends TypeAdapter<ServerMessage> {
             return switch (serverMessageType) {
                 case ERROR -> new ErrorMessage(serverMessageType, errorMessage);
                 case LOAD_GAME -> new LoadGameMessage(serverMessageType, game);
-                case NOTIFICATION -> new NotificationMessage(serverMessageType, message);
+                case NOTIFICATION -> new NotificationMessage(message);
             };
         }
     }

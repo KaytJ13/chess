@@ -24,6 +24,20 @@ public class ConnectionManager {
         connections.remove(username);
     }
 
+    public void sendOneUser(Session session, ServerMessage notification) throws IOException {
+        GsonBuilder builder = new GsonBuilder();
+        builder.registerTypeAdapter(ServerMessage.class, new ServerMessageTypeAdapter());
+        Gson gson = builder.create();
+
+        for (var c : connections.values()) {
+            if (c.session.isOpen()) {
+                if (c.session.equals(session)) {
+                    c.send(gson.toJson(notification));
+                }
+            }
+        }
+    }
+
     public void broadcast(String excludeUser, ServerMessage notification) throws IOException {
 //        System.out.print("DEBUG: entered broadcast\n");
 

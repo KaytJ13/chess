@@ -61,8 +61,7 @@ public class WebSocketFacade extends Endpoint {
     public void sendConnect(String authToken, int gameID, String username, ChessGame.TeamColor color)
             throws ResponseException {
         try {
-            ConnectCommand command = new ConnectCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID,
-                    username, color);
+            ConnectCommand command = new ConnectCommand(authToken, gameID);
             this.session.getBasicRemote().sendText(gson.toJson(command));
 
 //            System.out.print("DEBUG: sent connect through notification handler (" + notificationHandler + ")\n");
@@ -72,10 +71,9 @@ public class WebSocketFacade extends Endpoint {
     }
 
     // Make Move
-    public void makeMove(String authToken, int gameID, String username, ChessMove move) throws ResponseException {
+    public void makeMove(String authToken, int gameID, ChessMove move) throws ResponseException {
         try {
-            MakeMoveCommand command = new MakeMoveCommand(UserGameCommand.CommandType.MAKE_MOVE, authToken, gameID,
-                    username, move);
+            MakeMoveCommand command = new MakeMoveCommand(authToken, gameID, move);
             this.session.getBasicRemote().sendText(gson.toJson(command));
         } catch (IOException ex) {
             throw new ResponseException(500, ex.getMessage());
@@ -83,12 +81,11 @@ public class WebSocketFacade extends Endpoint {
     }
 
     // Leave
-    public void sendLeave(String authToken, int gameID, String username, ChessGame.TeamColor color)
+    public void sendLeave(String authToken, int gameID)
             throws ResponseException {
         // This doesn't work yet, obviously
         try {
-            LeaveCommand command = new LeaveCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID, username,
-                    color);
+            LeaveCommand command = new LeaveCommand(authToken, gameID);
             this.session.getBasicRemote().sendText(gson.toJson(command));
             this.session.close();
         } catch (IOException e) {
@@ -97,9 +94,9 @@ public class WebSocketFacade extends Endpoint {
     }
 
     // Resign
-    public void sendResign(String authToken, int gameID, String username) throws ResponseException {
+    public void sendResign(String authToken, int gameID) throws ResponseException {
         try {
-            ResignCommand command = new ResignCommand(UserGameCommand.CommandType.RESIGN, authToken, gameID, username);
+            ResignCommand command = new ResignCommand(authToken, gameID);
             this.session.getBasicRemote().sendText(gson.toJson(command));
         } catch (Exception e) {
             throw new ResponseException(500, e.getMessage());

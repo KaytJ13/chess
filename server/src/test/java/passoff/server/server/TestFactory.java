@@ -1,6 +1,10 @@
 package passoff.server;
 
 import com.google.gson.GsonBuilder;
+import websocket.commands.CommandTypeAdapter;
+import websocket.commands.UserGameCommand;
+import websocket.messages.ServerMessage;
+import websocket.messages.ServerMessageTypeAdapter;
 
 public class TestFactory {
 
@@ -33,6 +37,8 @@ public class TestFactory {
          * or deserialize chess objects like ChessMove, you may add type adapters here.
          */
         GsonBuilder builder = new GsonBuilder();
+        builder.registerTypeAdapter(UserGameCommand.class, new CommandTypeAdapter());
+        builder.registerTypeAdapter(ServerMessage.class, new ServerMessageTypeAdapter());
         // builder.registerTypeAdapter(ChessMove.class, /*type adapter or json serializer */);
         return builder;
     }

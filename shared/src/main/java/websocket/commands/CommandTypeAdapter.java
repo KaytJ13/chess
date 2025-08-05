@@ -27,8 +27,6 @@ public class CommandTypeAdapter extends TypeAdapter<UserGameCommand> {
         UserGameCommand.CommandType commandType = null;
         String authToken = null;
         int gameID = 0;
-        ChessGame.TeamColor color = null;
-        String username = null;
         ChessMove move = null;
 
         jsonReader.beginObject();
@@ -39,8 +37,6 @@ public class CommandTypeAdapter extends TypeAdapter<UserGameCommand> {
                 case "commandType" -> commandType = UserGameCommand.CommandType.valueOf(jsonReader.nextString());
                 case "authToken" -> authToken = jsonReader.nextString();
                 case "gameID" -> gameID = jsonReader.nextInt();
-                case "color" -> color = ChessGame.TeamColor.valueOf(jsonReader.nextString());
-                case "username" -> username = jsonReader.nextString();
                 case "move" -> move = new Gson().getAdapter(ChessMove.class).read(jsonReader);
             }
         }
@@ -51,10 +47,10 @@ public class CommandTypeAdapter extends TypeAdapter<UserGameCommand> {
             return null;
         } else {
             return switch (commandType) {
-                case CONNECT -> new ConnectCommand(commandType, authToken, gameID, username, color);
-                case MAKE_MOVE -> new MakeMoveCommand(commandType, authToken, gameID, username, move);
-                case RESIGN -> new ResignCommand(commandType, authToken, gameID, username);
-                case LEAVE -> new LeaveCommand(commandType, authToken, gameID, username, color);
+                case CONNECT -> new ConnectCommand(authToken, gameID);
+                case MAKE_MOVE -> new MakeMoveCommand(authToken, gameID, move);
+                case RESIGN -> new ResignCommand(authToken, gameID);
+                case LEAVE -> new LeaveCommand(authToken, gameID);
             };
         }
     }
